@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>DD-to-IC · 尽调投决系统</title>
+  <title>CJ投决系统 · 尽调投决系统</title>
   <style>
     *{margin:0;padding:0;box-sizing:border-box}
     body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;background:#f5f6f7;color:#1f2a3a;font-size:14px}
@@ -128,7 +128,7 @@
 <div class="app" id="app">
   <aside class="sidebar">
     <div class="sidebar-header">
-      <h1><span class="logo">DD</span> DD-to-IC</h1>
+      <h1><span class="logo">CJ</span> CJ投决系统</h1>
     </div>
     <nav class="sidebar-nav">
       <div class="nav-item active" data-page="dashboard" onclick="switchPage('dashboard')"><span class="icon">📊</span> 项目看板<span class="badge" id="project-count">0</span></div>
@@ -139,7 +139,7 @@
       <div class="nav-item" data-page="ic-memo" onclick="switchPage('ic-memo')"><span class="icon">📝</span> 投决材料</div>
       <div class="nav-item" data-page="simulator" onclick="switchPage('simulator')"><span class="icon">🎯</span> 投决会模拟</div>
     </nav>
-    <div class="sidebar-footer"><div class="nav-item" style="font-size:12px">v1.0 · 数据来自 dd-to-ic Skill</div></div>
+    <div class="sidebar-footer"><div class="nav-item" style="font-size:12px">v1.0 · CJ投决系统</div></div>
   </aside>
   <main class="main">
     <header class="topbar">
@@ -147,7 +147,7 @@
       <div class="topbar-actions">
         <button class="sync-btn" onclick="refreshData()" id="sync-btn">🔄 同步数据</button>
         <button class="btn btn-primary btn-sm" onclick="switchPage('new-project')">+ 新建项目</button>
-        <div class="user-avatar">主</div>
+        <button class="btn btn-warning btn-sm" onclick="requestAnalysis()" id="request-btn" title="在项目详情页点击，生成分析请求消息">🤖 请求分析</button>
       </div>
     </header>
     <div class="content" id="page-content"></div>
@@ -339,6 +339,24 @@ function toggleModule(el){const b=el.nextElementSibling;b.classList.toggle('open
 function toggleMemo(el){const b=el.nextElementSibling;b.classList.toggle('open');el.querySelector('span:last-child').textContent=b.classList.contains('open')?'▼':'▶'}
 
 loadData();
+
+function requestAnalysis(){
+  const proj = getProject(currentProject);
+  if(!proj){alert('请先选择一个项目');return;}
+  const msg = '帮我分析' + proj.name + '（' + (proj.companyFullName||'') + '）\n赛道：' + proj.sectorLabel + '\n轮次：' + proj.round + '\n材料已准备';
+  const textarea = document.createElement('textarea');
+  textarea.value = '🤖 帮我分析 ' + proj.name + '（详情在建项目看板）';
+  document.body.appendChild(textarea);
+  textarea.select();
+  try{
+    document.execCommand('copy');
+    alert('✅ 已复制！\n\n请在群里发：\n「🤖 帮我分析 ' + proj.name + '」\n\n我就开始干活了 🚀');
+  }catch(e){
+    prompt('复制下面这句话发到群里：', '🤖 帮我分析 ' + proj.name + '（详情在建项目看板）');
+  }
+  document.body.removeChild(textarea);
+}
+
 </script>
 </body>
 </html>
