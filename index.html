@@ -232,20 +232,30 @@ function Pd(){
 // New Project
 function Pn(){
   return '<div class="card"><div class="card-header"><h3>新建项目</h3></div>'+
-    '<div class="form-row"><div class="form-group"><label>公司全称 *</label><input type="text" placeholder="如：北京星辰空间科技有限公司" id="new-fullname"></div>'+
-    '<div class="form-group"><label>公司简称（用于显示）*</label><input type="text" placeholder="如：星辰空间" id="new-name"></div></div>'+
+    '<div class="form-row"><div class="form-group"><label>公司全称 *</label><input type="text" placeholder="如：白鲸航线（北京）科技有限公司" id="new-fullname"></div>'+
+    '<div class="form-group"><label>公司简称（用于显示）*</label><input type="text" placeholder="如：白鲸航线" id="new-name"></div></div>'+
     '<div class="form-row"><div class="form-group"><label>赛道 *</label><select id="new-sector"><option value="">请选择</option><option value="space">🚀 商业航天</option><option value="lowalt">🛩️ 低空经济</option><option value="defense">🎯 国防军工</option><option value="ai">🧠 人工智能</option><option value="embodied">🤖 具身智能</option></select></div>'+
     '<div class="form-group"><label>轮次</label><select id="new-round"><option>天使轮</option><option>Pre-A</option><option>A轮</option><option>A+轮</option><option>B轮</option><option>C轮</option></select></div></div>'+
     '<div class="form-row"><div class="form-group"><label>拟投资金额（万元）</label><input type="text" id="new-amount" placeholder="如：5000"></div>'+
     '<div class="form-group"><label>分析模式</label><select id="new-mode"><option value="fast">⚡ 快速扫描</option><option value="deep" selected>🔬 深度尽调</option><option value="track">📡 持续跟踪</option></select></div></div>'+
-    '<div class="form-group"><label>项目简介</label><textarea id="new-desc" rows="3" placeholder="公司做什么、核心产品、目标市场..."></textarea></div>'+
-    '<div style="margin-top:20px;display:flex;gap:12px"><button class="btn btn-primary" onclick="createProject()">🚀 启动分析</button><button class="btn btn-secondary" onclick="switchPage(\'dashboard\')">取消</button></div></div>';
+    '<div class="form-group"><label>项目简介</label><textarea id="new-desc" rows="2" placeholder="公司做什么、核心产品、目标市场..."></textarea></div>'+
+    '<div class="card" style="background:#f8faff;border:1px solid #d0e0ff;"><div class="card-header"><h3>📎 尽调材料提交</h3></div>'+
+    '<div class="form-group"><label>① 飞书文档链接</label><input type="text" id="new-feishu-url" placeholder="粘贴飞书文档/多维表格/云盘链接">'+
+    '<p class="text-muted" style="font-size:12px;margin-top:4px">我收到后直接用 feishu_doc 读取内容</p></div>'+
+    '<div class="form-group"><label>② 或发文件到群里</label><div class="upload-zone" style="padding:16px;cursor:default;background:#fff">📁 把 PDF / DOCX / Excel 发到群里 @我 → 我读取分析</div></div></div>'+
+    '<div style="margin-top:16px;padding:12px 14px;background:#fff8e6;border-radius:8px;border:1px solid #ffe0a0">'+
+    '<p style="font-size:12px;color:#cc6600"><strong>💡 创建后：</strong>在群里 @我 说「帮我分析XXX」→ 我分析完→ 你点「同步数据」刷新看结果</p></div>'+
+    '<div style="margin-top:16px;display:flex;gap:12px"><button class="btn btn-primary" onclick="createProject()">🚀 创建项目</button><button class="btn btn-secondary" onclick="switchPage(\'dashboard\')">取消</button></div></div>';
 }
 function createProject(){
   const name=document.getElementById('new-name').value.trim();
   const full=document.getElementById('new-fullname').value.trim();
+  const feishuUrl=document.getElementById('new-feishu-url').value.trim();
   if(!full||!name){alert('请填写公司全称和简称');return}
-  alert('✅ 已创建：'+full+'（'+name+'）\n\n请在群里告诉我"帮我分析'+name+'"，\n我分析完后你点"同步数据"刷新即可');
+  let msg = '✅ 已创建：'+full+'（'+name+'）';
+  if(feishuUrl){msg += '\n📎 文档链接已记录：'+feishuUrl;}
+  msg += '\n\n📋 下一步：请在群里 @我 说"帮我分析'+name+'"';
+  alert(msg);
   switchPage('dashboard');
 }
 
