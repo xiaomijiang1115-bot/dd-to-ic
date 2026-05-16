@@ -5,15 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>DD-to-IC · 尽调投决系统</title>
   <style>
-    /* ========== Reset & Base ========== */
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif; background: #f5f6f7; color: #1f2a3a; font-size: 14px; }
     a { text-decoration: none; color: #3370ff; }
-    
-    /* ========== Layout ========== */
     .app { display: flex; min-height: 100vh; }
-    
-    /* ===== Sidebar ===== */
     .sidebar { width: 220px; background: #fff; border-right: 1px solid #e8eaed; display: flex; flex-direction: column; position: fixed; top: 0; left: 0; height: 100vh; z-index: 100; }
     .sidebar-header { padding: 20px 16px; border-bottom: 1px solid #e8eaed; }
     .sidebar-header h1 { font-size: 16px; font-weight: 600; color: #3370ff; display: flex; align-items: center; gap: 8px; }
@@ -26,16 +21,17 @@
     .nav-item .badge { margin-left: auto; background: #e8eaed; color: #4e5a6b; font-size: 11px; padding: 1px 8px; border-radius: 10px; }
     .sidebar-footer { padding: 12px 8px; border-top: 1px solid #e8eaed; }
     .sidebar-footer .nav-item { color: #8c9aa8; font-size: 12px; }
-    
-    /* ===== Main ===== */
     .main { margin-left: 220px; flex: 1; padding: 0; }
     .topbar { background: #fff; border-bottom: 1px solid #e8eaed; padding: 12px 32px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 50; }
     .topbar h2 { font-size: 18px; font-weight: 600; }
     .topbar-actions { display: flex; gap: 12px; align-items: center; }
     .topbar .user-avatar { width: 32px; height: 32px; border-radius: 50%; background: #3370ff; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; cursor: pointer; }
+    .topbar .sync-btn { background: none; border: 1px solid #d0d5dd; border-radius: 6px; padding: 6px 12px; cursor: pointer; font-size: 12px; color: #4e5a6b; }
+    .topbar .sync-btn:hover { background: #f5f6f7; }
+    .topbar .sync-btn.loading { opacity: 0.6; pointer-events: none; }
     .content { padding: 24px 32px; }
-    
-    /* ===== Buttons ===== */
+    .loading-overlay { position: fixed; inset: 0; background: rgba(255,255,255,.8); z-index: 999; display: flex; align-items: center; justify-content: center; font-size: 16px; color: #4e5a6b; }
+    .loading-overlay.hidden { display: none; }
     .btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 20px; border-radius: 6px; border: 1px solid transparent; font-size: 14px; cursor: pointer; transition: all .15s; font-weight: 500; }
     .btn-primary { background: #3370ff; color: #fff; border-color: #3370ff; }
     .btn-primary:hover { background: #2857d9; }
@@ -45,20 +41,14 @@
     .btn-warning { background: #ff8800; color: #fff; border-color: #ff8800; }
     .btn-danger { background: #f53f3f; color: #fff; border-color: #f53f3f; }
     .btn-sm { padding: 4px 12px; font-size: 12px; }
-    
-    /* ===== Cards ===== */
     .card { background: #fff; border-radius: 12px; border: 1px solid #e8eaed; padding: 20px; margin-bottom: 16px; }
     .card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
     .card-header h3 { font-size: 15px; font-weight: 600; }
-    
-    /* ===== Stats Grid ===== */
     .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
     .stat-card { background: #fff; border-radius: 12px; border: 1px solid #e8eaed; padding: 20px; }
     .stat-card .label { font-size: 12px; color: #8c9aa8; margin-bottom: 4px; }
     .stat-card .value { font-size: 28px; font-weight: 700; color: #1f2a3a; }
     .stat-card .sub { font-size: 12px; color: #00b578; margin-top: 4px; }
-    
-    /* ===== Project Table ===== */
     .table { width: 100%; border-collapse: collapse; }
     .table th { text-align: left; padding: 12px 16px; font-size: 12px; color: #8c9aa8; font-weight: 500; border-bottom: 1px solid #e8eaed; }
     .table td { padding: 14px 16px; border-bottom: 1px solid #f0f2f5; font-size: 14px; }
@@ -68,39 +58,29 @@
     .status.analyzing { background: #fff3e0; color: #ff8800; }
     .status.pending { background: #f0f2f5; color: #8c9aa8; }
     .status.draft { background: #e8f0ff; color: #3370ff; }
-    
-    /* ===== Tags ===== */
     .tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 12px; background: #f0f2f5; color: #4e5a6b; margin: 0 2px; }
     .tag.space { background: #e8f0ff; color: #3370ff; }
     .tag.lowalt { background: #e8f8f0; color: #00b578; }
     .tag.defense { background: #fff3e0; color: #cc6600; }
     .tag.ai { background: #f0e8ff; color: #7b61ff; }
-
-    /* ===== Forms ===== */
     .form-group { margin-bottom: 16px; }
     .form-group label { display: block; font-size: 13px; font-weight: 500; margin-bottom: 6px; color: #4e5a6b; }
     .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 10px 12px; border: 1px solid #d0d5dd; border-radius: 8px; font-size: 14px; outline: none; transition: border .15s; font-family: inherit; }
     .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: #3370ff; box-shadow: 0 0 0 2px rgba(51,112,255,.12); }
     .form-group textarea { resize: vertical; min-height: 80px; }
     .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-
-    /* ===== Tabs ===== */
     .tabs { display: flex; gap: 0; border-bottom: 1px solid #e8eaed; margin-bottom: 20px; }
     .tab { padding: 10px 20px; cursor: pointer; color: #8c9aa8; font-size: 14px; border-bottom: 2px solid transparent; transition: all .15s; }
     .tab:hover { color: #4e5a6b; }
     .tab.active { color: #3370ff; border-bottom-color: #3370ff; font-weight: 500; }
     .tab-content { display: none; }
     .tab-content.active { display: block; }
-
-    /* ===== Module Cards ===== */
     .module-card { border: 1px solid #e8eaed; border-radius: 10px; margin-bottom: 12px; overflow: hidden; }
     .module-header { padding: 14px 16px; background: #fafbfc; cursor: pointer; display: flex; align-items: center; justify-content: space-between; font-weight: 500; }
     .module-header:hover { background: #f0f2f5; }
     .module-body { padding: 16px; display: none; border-top: 1px solid #e8eaed; }
     .module-body.open { display: block; }
     .module-body p { line-height: 1.7; color: #4e5a6b; margin-bottom: 8px; }
-
-    /* ===== Red Team ===== */
     .risk-item { display: flex; gap: 12px; padding: 12px 0; border-bottom: 1px solid #f0f2f5; }
     .risk-item:last-child { border-bottom: none; }
     .risk-icon { width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
@@ -113,23 +93,20 @@
     .risk-tag.high { background: #fff1f0; color: #f53f3f; }
     .risk-tag.mid { background: #fff7e6; color: #ff8800; }
     .risk-tag.low { background: #e8f8f0; color: #00b578; }
-
-    /* ===== Report ===== */
     .report-actions { display: flex; gap: 8px; margin-top: 16px; flex-wrap: wrap; }
-    
-    /* ===== Simulator ===== */
     .chat-box { border: 1px solid #e8eaed; border-radius: 10px; overflow: hidden; }
     .chat-msg { padding: 12px 16px; border-bottom: 1px solid #f0f2f5; }
     .chat-msg:last-child { border-bottom: none; }
     .chat-msg .sender { font-size: 12px; color: #8c9aa8; margin-bottom: 4px; }
     .chat-msg .sender .name { font-weight: 500; color: #1f2a3a; }
     .chat-msg .text { line-height: 1.6; }
-    .chat-msg .text .highlight { color: #3370ff; }
     .chat-input { display: flex; gap: 8px; padding: 12px; border-top: 1px solid #e8eaed; }
     .chat-input input { flex: 1; border: 1px solid #d0d5dd; border-radius: 6px; padding: 8px 12px; outline: none; }
     .chat-input input:focus { border-color: #3370ff; }
-
-    /* ===== Utils ===== */
+    .upload-zone { border: 2px dashed #d0d5dd; border-radius: 12px; padding: 40px; text-align: center; cursor: pointer; transition: all .2s; }
+    .upload-zone:hover { border-color: #3370ff; background: #f8faff; }
+    .upload-zone .icon { font-size: 40px; margin-bottom: 12px; }
+    .upload-zone p { color: #8c9aa8; font-size: 13px; }
     .text-muted { color: #8c9aa8; }
     .text-danger { color: #f53f3f; }
     .text-success { color: #00b578; }
@@ -140,15 +117,10 @@
     .mt-16 { margin-top: 16px; }
     .mb-16 { margin-bottom: 16px; }
     .hidden { display: none !important; }
-    .w-full { width: 100%; }
-
-    /* ===== Feishu-style upload area ===== */
-    .upload-zone { border: 2px dashed #d0d5dd; border-radius: 12px; padding: 40px; text-align: center; cursor: pointer; transition: all .2s; }
-    .upload-zone:hover { border-color: #3370ff; background: #f8faff; }
-    .upload-zone .icon { font-size: 40px; margin-bottom: 12px; }
-    .upload-zone p { color: #8c9aa8; font-size: 13px; }
-
-    /* ========== Responsive ========== */
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.3); z-index: 200; display: none; align-items: center; justify-content: center; }
+    .modal-overlay.open { display: flex; }
+    .modal { background: #fff; border-radius: 16px; width: 600px; max-width: 90vw; max-height: 85vh; overflow-y: auto; padding: 32px; }
+    .modal h2 { font-size: 18px; margin-bottom: 20px; }
     @media (max-width: 768px) {
       .sidebar { display: none; }
       .main { margin-left: 0; }
@@ -157,18 +129,10 @@
       .form-row { grid-template-columns: 1fr; }
       .topbar { padding: 12px 16px; }
     }
-
-    /* ===== Modal ===== */
-    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.3); z-index: 200; display: none; align-items: center; justify-content: center; }
-    .modal-overlay.open { display: flex; }
-    .modal { background: #fff; border-radius: 16px; width: 600px; max-width: 90vw; max-height: 85vh; overflow-y: auto; padding: 32px; }
-    .modal h2 { font-size: 18px; margin-bottom: 20px; }
   </style>
 </head>
 <body>
 <div class="app" id="app">
-
-  <!-- ========== Sidebar ========== -->
   <aside class="sidebar">
     <div class="sidebar-header">
       <h1><span class="logo">DD</span> DD-to-IC</h1>
@@ -176,7 +140,7 @@
     <nav class="sidebar-nav">
       <div class="nav-item active" data-page="dashboard" onclick="switchPage('dashboard')">
         <span class="icon">📊</span> 项目看板
-        <span class="badge">3</span>
+        <span class="badge" id="project-count">0</span>
       </div>
       <div class="nav-item" data-page="new-project" onclick="switchPage('new-project')">
         <span class="icon">➕</span> 新建项目
@@ -196,587 +160,208 @@
       </div>
     </nav>
     <div class="sidebar-footer">
-      <div class="nav-item"><span class="icon">⚙️</span> 系统设置</div>
-      <div class="nav-item" style="font-size:12px;">v1.0 · 基于 dd-to-ic Skill</div>
+      <div class="nav-item" style="font-size:12px;">v1.0 · 数据来自 data/projects.json</div>
     </div>
   </aside>
 
-  <!-- ========== Main ========== -->
   <main class="main">
-    <header class="topbar" id="topbar">
+    <header class="topbar">
       <h2 id="page-title">项目看板</h2>
       <div class="topbar-actions">
+        <button class="sync-btn" onclick="refreshData()" id="sync-btn">🔄 同步数据</button>
         <button class="btn btn-primary btn-sm" onclick="switchPage('new-project')">+ 新建项目</button>
         <div class="user-avatar">主</div>
       </div>
     </header>
-
-    <div class="content">
-
-      <!-- ===== Page: Dashboard ===== -->
-      <div id="page-dashboard" class="page active">
-        <div class="stats-grid">
-          <div class="stat-card"><div class="label">进行中项目</div><div class="value">2</div><div class="sub">↑ 较上月 +1</div></div>
-          <div class="stat-card"><div class="label">已完成分析</div><div class="value">5</div><div class="sub">总计</div></div>
-          <div class="stat-card"><div class="label">待补充材料</div><div class="value">1</div><div class="sub"><span class="text-danger">需跟进</span></div></div>
-          <div class="stat-card"><div class="label">快扫有效率</div><div class="value">87%</div><div class="sub">↑ 环比 +5%</div></div>
-        </div>
-
-        <div class="card">
-          <div class="card-header">
-            <h3>项目列表</h3>
-            <div class="flex gap-8">
-              <button class="btn btn-secondary btn-sm">按赛道筛选</button>
-              <button class="btn btn-secondary btn-sm">按状态</button>
-            </div>
-          </div>
-          <table class="table">
-            <thead>
-              <tr>
-                <th>项目名称</th>
-                <th>赛道</th>
-                <th>轮次</th>
-                <th>状态</th>
-                <th>进度</th>
-                <th>操作</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr onclick="openProject('1')" style="cursor:pointer">
-                <td><strong>星辰空间</strong><br><span class="text-muted" style="font-size:12px;">可复用火箭发动机</span></td>
-                <td><span class="tag space">🚀 商业航天</span></td>
-                <td>B轮</td>
-                <td><span class="status done">✅ 已完成</span></td>
-                <td><span style="color:#00b578">8/8 模块</span></td>
-                <td><button class="btn btn-sm btn-primary" onclick="event.stopPropagation();openProject('1')">查看</button></td>
-              </tr>
-              <tr onclick="openProject('2')" style="cursor:pointer">
-                <td><strong>云翼航空</strong><br><span class="text-muted" style="font-size:12px;">eVTOL 整机</span></td>
-                <td><span class="tag lowalt">🛩️ 低空经济</span></td>
-                <td>C轮</td>
-                <td><span class="status draft">📝 分析中</span></td>
-                <td><span style="color:#3370ff">5/8 模块</span></td>
-                <td><button class="btn btn-sm btn-primary" onclick="event.stopPropagation();openProject('2')">查看</button></td>
-              </tr>
-              <tr onclick="openProject('3')" style="cursor:pointer">
-                <td><strong>华盾科技</strong><br><span class="text-muted" style="font-size:12px;">军用无人系统</span></td>
-                <td><span class="tag defense">🎯 国防军工</span></td>
-                <td>A+轮</td>
-                <td><span class="status pending">⏳ 待材料</span></td>
-                <td><span style="color:#8c9aa8">缺法务DD</span></td>
-                <td><button class="btn btn-sm btn-secondary" onclick="event.stopPropagation();openProject('3')">查看</button></td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <!-- ===== Page: New Project ===== -->
-      <div id="page-new-project" class="page">
-        <div class="card">
-          <div class="card-header"><h3>新建项目</h3></div>
-          <div class="form-row">
-            <div class="form-group">
-              <label>项目名称 *</label>
-              <input type="text" placeholder="如：星辰空间" id="new-name">
-            </div>
-            <div class="form-group">
-              <label>赛道 *</label>
-              <select id="new-sector">
-                <option value="">请选择</option>
-                <option value="space">🚀 商业航天</option>
-                <option value="lowalt">🛩️ 低空经济</option>
-                <option value="defense">🎯 国防军工</option>
-                <option value="ai">🧠 人工智能</option>
-                <option value="embodied">🤖 具身智能</option>
-                <option value="truck">🚛 新能源重卡</option>
-                <option value="material">🧪 新材料</option>
-                <option value="capital">📊 资本市场</option>
-              </select>
-            </div>
-          </div>
-          <div class="form-row">
-            <div class="form-group">
-              <label>融资轮次 *</label>
-              <select id="new-round">
-                <option value="">请选择</option>
-                <option>天使轮</option><option>Pre-A</option><option>A轮</option><option>A+轮</option>
-                <option>B轮</option><option>C轮</option><option>D轮</option><option>Pre-IPO</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label>拟投资金额（万元）</label>
-              <input type="text" placeholder="如：5000">
-            </div>
-          </div>
-          <div class="form-group">
-            <label>项目简介</label>
-            <textarea placeholder="简要描述公司做什么、核心产品、目标市场..."></textarea>
-          </div>
-          <div class="form-group">
-            <label>上传尽调材料</label>
-            <div class="upload-zone" onclick="document.getElementById('file-input').click()">
-              <div class="icon">📁</div>
-              <p><strong>点击上传</strong> 或拖拽文件到此处</p>
-              <p style="font-size:12px;margin-top:4px;">支持 PDF / DOCX / Excel / 图片（单个 max 20MB）</p>
-              <input type="file" id="file-input" multiple style="display:none" onchange="showFiles(this)">
-            </div>
-            <div id="file-list" class="flex gap-8" style="margin-top:8px;flex-wrap:wrap"></div>
-          </div>
-          <div class="form-group" style="margin-bottom:0">
-            <label>分析模式</label>
-            <select id="new-mode">
-              <option value="fast">⚡ 快速扫描（30分钟 — 初步接触）</option>
-              <option value="deep">🔬 深度尽调（1-2天 — 8模块完整分析）</option>
-              <option value="track">📡 持续跟踪（投后/储备）</option>
-            </select>
-          </div>
-          <div style="margin-top:20px;display:flex;gap:12px">
-            <button class="btn btn-primary" onclick="createProject()">🚀 启动分析</button>
-            <button class="btn btn-secondary" onclick="switchPage('dashboard')">取消</button>
-          </div>
-        </div>
-      </div>
-
-      <!-- ===== Page: Project Detail ===== -->
-      <div id="page-project-detail" class="page">
-        <div id="project-header" class="card" style="padding:16px 20px;">
-          <div class="flex flex-center" style="justify-content:space-between">
-            <div>
-              <h3 id="detail-name" style="font-size:18px;">星辰空间</h3>
-              <div class="flex gap-8" style="margin-top:6px">
-                <span class="tag space" id="detail-sector">🚀 商业航天</span>
-                <span class="tag" id="detail-round">B轮</span>
-                <span class="status done" id="detail-status">✅ 已完成</span>
-              </div>
-            </div>
-            <div class="flex gap-8">
-              <button class="btn btn-sm btn-primary" onclick="switchPage('red-team')">🔴 红队报告</button>
-              <button class="btn btn-sm btn-warning" onclick="switchPage('ic-memo')">📝 投决材料</button>
-            </div>
-          </div>
-        </div>
-
-        <div class="tabs">
-          <div class="tab active" data-tab="modules" onclick="switchTab('modules')">8 模块分析</div>
-          <div class="tab" data-tab="materials" onclick="switchTab('materials')">材料清单</div>
-          <div class="tab" data-tab="timeline" onclick="switchTab('timeline')">动态时间线</div>
-        </div>
-
-        <!-- Tab: Modules -->
-        <div id="tab-modules" class="tab-content active">
-          <!-- module items injected by JS -->
-        </div>
-
-        <!-- Tab: Materials -->
-        <div id="tab-materials" class="tab-content">
-          <div class="card">
-            <div class="card-header"><h3>材料完整性检查</h3></div>
-            <div id="material-checklist"></div>
-          </div>
-        </div>
-
-        <!-- Tab: Timeline -->
-        <div id="tab-timeline" class="tab-content">
-          <div class="card">
-            <div class="card-header"><h3>分析时间线</h3></div>
-            <div id="timeline-items"></div>
-          </div>
-        </div>
-      </div>
-
-      <!-- ===== Page: Red Team ===== -->
-      <div id="page-red-team" class="page">
-        <div class="card" style="border-left: 4px solid #f53f3f;">
-          <div class="flex flex-center gap-12" style="margin-bottom:12px">
-            <span style="font-size:24px;">🔴</span>
-            <div><h3 style="font-size:16px;">红队评估报告</h3><p class="text-muted" style="font-size:12px;">独立于主分析，AI 主动挑战关键假设</p></div>
-          </div>
-          <div class="risk-item">
-            <div class="risk-icon red">🔴</div>
-            <div class="risk-content">
-              <div class="title">火箭发射失败风险概率被低估 <span class="risk-tag high">高</span></div>
-              <div class="desc">项目方假设首发成功率90%，但行业数据显示民营火箭首飞成功率约65%。如果首发失败，下一轮融资节奏将被打乱，现金跑道可能不够。</div>
-            </div>
-          </div>
-          <div class="risk-item">
-            <div class="risk-icon red">🔴</div>
-            <div class="risk-content">
-              <div class="title">客户集中度极高 <span class="risk-tag high">高</span></div>
-              <div class="desc">前3大客户占收入80%，最大客户占45%。任一客户流失将严重冲击收入。需确认合同条款中的锁定期和违约赔偿。</div>
-            </div>
-          </div>
-          <div class="risk-item">
-            <div class="risk-icon yellow">🟡</div>
-            <div class="risk-content">
-              <div class="title">估值较上轮翻3倍缺少支撑 <span class="risk-tag mid">中</span></div>
-              <div class="desc">A轮投后5亿，本轮投前15亿。但本轮关键技术里程碑（火箭全流程试车）尚未完成。对比SpaceX早期融资估值增速，本轮估值显得偏乐观。</div>
-            </div>
-          </div>
-          <div class="risk-item">
-            <div class="risk-icon yellow">🟡</div>
-            <div class="risk-content">
-              <div class="title">创始人上一家创业公司清算记录 <span class="risk-tag mid">中</span></div>
-              <div class="desc">公开信息显示创始人2018年创办的某公司已注销。需确认注销原因、债务处理情况，是否有潜在法律风险。</div>
-            </div>
-          </div>
-          <div class="risk-item">
-            <div class="risk-icon red">🔴</div>
-            <div class="risk-content">
-              <div class="title">核心IP归属存疑 <span class="risk-tag high">高</span></div>
-              <div class="desc">3项核心发明专利的发明人有2人已离职。发明人与前单位的职务发明界定是否清晰？需法务DD核实。</div>
-            </div>
-          </div>
-          <div class="report-actions">
-            <button class="btn btn-warning btn-sm">📋 导出红队报告</button>
-            <button class="btn btn-secondary btn-sm">🔄 重新评估</button>
-          </div>
-        </div>
-      </div>
-
-      <!-- ===== Page: IC Memo ===== -->
-      <div id="page-ic-memo" class="page">
-        <div class="card">
-          <div class="flex flex-center" style="justify-content:space-between;margin-bottom:16px">
-            <h3 style="font-size:16px;">📝 投资建议书 · 星辰空间</h3>
-            <div class="flex gap-8">
-              <button class="btn btn-sm btn-primary">导出 PDF</button>
-              <button class="btn btn-sm btn-secondary">生成 PPT 提纲</button>
-            </div>
-          </div>
-          <div class="module-card">
-            <div class="module-header" onclick="toggleMemo(this)">📄 执行摘要 <span>▶</span></div>
-            <div class="module-body open">
-              <p><strong>项目：</strong>星辰空间 — 可复用火箭发动机研发商</p>
-              <p><strong>赛道判断：</strong>✅ 看多，商业航天进入规模化发射阶段，可复用火箭是确定性趋势</p>
-              <p><strong>投资建议：</strong><span class="text-success"><strong>有条件同意投资</strong></span></p>
-              <p><strong>核心逻辑：</strong>团队有航天科技集团背景，发动机试车已验证关键指标，本轮估值对标可比公司合理。需在SPA中加入IP归属保障条款。</p>
-              <p><strong>拟投资金额：</strong>￥5,000万，投后占比8.3%</p>
-            </div>
-          </div>
-          <div class="module-card">
-            <div class="module-header" onclick="toggleMemo(this)">📊 投资亮点 <span>▶</span></div>
-            <div class="module-body">
-              <p>✅ <strong>行业红利：</strong> 商业航天国家战略明确，"十四五"商业航天市场规模预计达2.8万亿</p>
-              <p>✅ <strong>技术领先：</strong> 国内首家完成80吨级液氧甲烷发动机全流程试车的民营企业</p>
-              <p>✅ <strong>订单确定：</strong> 已签订单3.2亿元，2026年交付排期已满</p>
-            </div>
-          </div>
-          <div class="module-card">
-            <div class="module-header" onclick="toggleMemo(this)">⚠️ 关键风险与缓释 <span>▶</span></div>
-            <div class="module-body">
-              <p>🔴 首发成功率不确定 → 缓释：已购保险覆盖70%损失，且有备用发射工位</p>
-              <p>🟡 客户集中度 → 缓释：2026年预计新增3个大客户，降低至50%以下</p>
-              <p>🔴 IP归属 → 缓释：SPA中增加IP保证条款及违约赔偿机制</p>
-            </div>
-          </div>
-          <div class="module-card">
-            <div class="module-header" onclick="toggleMemo(this)">💰 估值与交易方案 <span>▶</span></div>
-            <div class="module-body">
-              <p><strong>可比公司 P/S 法：</strong> 本标的值 8x，行业均值 12x → 合理偏低</p>
-              <p><strong>可比交易法：</strong> 类似阶段交易 6-10x → 处于合理区间</p>
-              <p><strong>估值结论：</strong> ✅ 投前15亿合理</p>
-              <p><strong>交易结构：</strong> 增资入资，1/3领投+跟投结构，领投方占1席董事</p>
-              <p><strong>退出预期：</strong> 2028年科创板，预期IRR 35%</p>
-            </div>
-          </div>
-          <div class="module-card">
-            <div class="module-header" onclick="toggleMemo(this)">❓ 投决会 Q&A 预判 <span>▶</span></div>
-            <div class="module-body">
-              <p><strong>Q：为什么这个赛道现在值得下注？</strong></p>
-              <p>A：政策端——"航天强国"写入二十大报告；需求端——卫星互联网星座建设催生低成本发射需求；供给端——SpaceX已验证可复用路径。</p>
-              <p><strong>Q：跟天兵科技/星际荣耀比，优势在哪？</strong></p>
-              <p>A：星辰的技术路线（液氧甲烷）在比冲和可复用性上优于星际荣耀的固体路线；团队发动机背景强于天兵。</p>
-              <p><strong>Q：如果IPO窗口关闭，退出路径是什么？</strong></p>
-              <p>A：并购退出——航天科技/科工集团有整合需求；S基金转让——已有S基金询价。</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- ===== Page: Simulator ===== -->
-      <div id="page-simulator" class="page">
-        <div class="card">
-          <div class="flex flex-center gap-12" style="margin-bottom:16px">
-            <span style="font-size:24px;">🎯</span>
-            <div><h3 style="font-size:16px;">投决会模拟问答</h3><p class="text-muted" style="font-size:12px;">我来扮演投决委，你回答问题，我帮你优化话术</p></div>
-          </div>
-          <div class="form-group">
-            <label>选择模拟项目</label>
-            <select onchange="updateSimProject(this.value)">
-              <option value="1">星辰空间 — 商业航天 B轮</option>
-              <option value="2">云翼航空 — 低空经济 C轮</option>
-              <option value="3">华盾科技 — 国防军工 A+轮</option>
-            </select>
-          </div>
-          <div class="chat-box">
-            <div class="chat-msg">
-              <div class="sender"><span class="name">🤖 投决委（AI）</span> · 刚刚</div>
-              <div class="text">你好，我是投决委。关于星辰空间这个项目，我想先问几个问题。<br><br>
-              <strong>第一个问题：</strong>这个赛道现在很热，但真正有收入的民营火箭公司不多。你判断今年行业能有什么标志性事件？星辰空间在其中处于什么位置？</div>
-            </div>
-            <div class="chat-msg">
-              <div class="sender"><span class="name">🧑‍💼 你</span> · 刚刚</div>
-              <div class="text">今年预计有3-4家民营火箭公司完成入轨发射。星辰的目标是Q3完成首飞，如果能成功，将是国内首家液氧甲烷入轨的民营企业。目前在国内民营液体火箭领域，星辰的发动机试车进度是最领先的。</div>
-            </div>
-            <div class="chat-msg">
-              <div class="sender"><span class="name">🤖 投决委（AI）</span> · 刚刚</div>
-              <div class="text">回答得不错，但有两个建议：<br>
-              1️⃣ 可以加一个数据支撑——目前国内商业火箭发射成功率数据<br>
-              2️⃣ 提到"最领先"时，建议用具体指标对比（推力、比冲、试车时长等），避免模糊表述<br><br>
-              <strong>追问：</strong>你说发动机进度领先，具体领先多少？有没有量化指标？</div>
-            </div>
-            <div class="chat-msg">
-              <div class="sender"><span class="name">🧑‍💼 你</span> · 刚刚</div>
-              <div class="text">我们的80吨级发动机已完成200秒长程试车，而同赛道的中科宇航刚完成50秒短试。在推力等级和试车时长上，我们领先至少6-9个月。</div>
-            </div>
-            <div class="chat-msg">
-              <div class="sender"><span class="name">🤖 投决委（AI）</span> · 刚才</div>
-              <div class="text">很好，这个量化对比有说服力。<br><br>
-              <strong>下一个问题：</strong>本轮估值15亿，比A轮翻了3倍。主要支撑是什么？如果首发失败，这个估值还能站住吗？</div>
-            </div>
-            <div class="chat-input">
-              <input type="text" placeholder="输入你的回答，我来点评和优化..." id="sim-input">
-              <button class="btn btn-sm btn-primary" onclick="sendSimMsg()">发送</button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-    </div>
+    <div class="content" id="page-content"></div>
   </main>
 </div>
 
+<div class="loading-overlay" id="loading-overlay">
+  <div>⏳ 数据加载中...</div>
+</div>
+
 <script>
-// ===== Page State =====
-const PAGES = ['dashboard', 'new-project', 'project-detail', 'red-team', 'ic-memo', 'simulator'];
+let APP_DATA = { projects: [], stats: {} };
+let currentProject = null;
 let currentPage = 'dashboard';
-let currentProject = '1';
+const DATA_URL = 'data/projects.json';
 
-// ===== Project Data =====
-const MODULES = {
-  '1': [
-    { n: '行业赛道分析', icon: '📈', verdict: '看多', conf: '高', content: '商业航天赛道 CAGR 35%，2025年国内发射市场超500亿。可复用火箭技术突破是核心驱动。星辰定位中大型液氧甲烷发动机，市场空间约200亿。政策端"航天强国"国家战略明确，军民融合加速。' },
-    { n: '公司基本面', icon: '🏢', verdict: 'A-', conf: '高', content: '2021年成立，团队85人。B轮融资投前15亿。核心产品为80吨级液氧甲烷发动机（"星火-1"），2026年计划首飞。已获3.2亿意向订单，客户含航天科技集团、银河航天。' },
-    { n: '技术壁垒评估', icon: '🔬', verdict: '国内领先', conf: '中', content: '已完成80吨级发动机200秒长程试车，国内首家。核心专利12项（发明6项+实用6项）。但2位关键发明人已离职，IP归属需法务确认。技术路线对标SpaceX Raptor，差距约5年。' },
-    { n: '团队尽调', icon: '👥', verdict: 'B+', conf: '中', content: 'CEO张总，航天科技集团15年经验（曾任长征系列主任设计师）。CTO李总，北航博士。但创始人2018年有过一次创业失败记录（清算注销）。团队技术强，商业能力待验证。' },
-    { n: '财务分析', icon: '💰', verdict: '中性', conf: '中', content: '2024年收入1200万（技术服务），亏损5800万。2025E预测收入8000万（发动机销售），毛利35%。现金跑道约18个月（含本轮）。预测增速偏高（同比+567%），需确认订单确定性。' },
-    { n: '法务与合规', icon: '⚖️', verdict: '有条件通过', conf: '低', content: '公司架构干净，VIE架构。但有3个关注点：①核心专利发明人已离职 ②创始人历史公司清算记录 ③航天出口管制合规需确认。建议SPA中加入IP保证条款。' },
-    { n: '风险与缓释', icon: '⚠️', verdict: '风险可控', conf: '中', content: 'TOP3风险：①首发失败（概率35%）→已购保险+备用发射工位 ②客户集中（前3占80%）→2026年新增客户计划 ③估值偏高→可比公司倍数在合理范围内。缓释措施整体充分。' },
-    { n: '估值与交易方案', icon: '📊', verdict: '合理偏低', conf: '中', content: '投前15亿，P/S (2026E) = 5.0x，可比公司均值8x。本轮估值合理偏低。建议投资5,000万，投后8.3%。交易条款建议：1票否决权+反稀释+优先清算权。退出路径：2028年科创板IPO（预计IRR 35%）。' }
-  ],
-  '2': [
-    { n: '行业赛道分析', icon: '📈', verdict: '看多', conf: '高', content: '低空经济政策密集落地，2025年eVTOL市场规模约150亿，CAGR 50%+。亿航已获TC证，行业进入适航取证加速期。' },
-    { n: '公司基本面', icon: '🏢', verdict: 'A', conf: '高', content: '2019年成立，团队120人。C轮融资。核心产品4座eVTOL，已完成全尺寸原型机试飞。与东部通航签署50架意向订单。' },
-    { n: '技术壁垒评估', icon: '🔬', verdict: '国内前列', conf: '中', content: '倾转旋翼方案+冗余飞控，技术路线对标Joby。已申请适航TC，预计2027年取证。电池续航280km，同级别领先。' }
-  ],
-  '3': [
-    { n: '行业赛道分析', icon: '📈', verdict: '看多', conf: '高', content: '国防支出CAGR 7.2%，无人系统是重点投入方向。俄乌战争验证了无人机/巡飞弹的实战价值。' },
-    { n: '公司基本面', icon: '🏢', verdict: 'B', conf: '中', content: '2022年成立，团队45人。A+轮融资。核心产品微型察打一体无人机系统。已获军方样机订单，但批量订单尚未落地。' }
-  ]
-};
+async function loadData() {
+  document.getElementById('loading-overlay').classList.remove('hidden');
+  try {
+    const res = await fetch(DATA_URL + '?t=' + Date.now());
+    if (res.ok) { APP_DATA = await res.json(); }
+  } catch(e) { console.log('数据加载失败', e); }
+  document.getElementById('loading-overlay').classList.add('hidden');
+  updateUI();
+}
 
-const materials = {
-  '1': [
-    { name: '商业计划书 v3.2', status: '✅ 已提交' },
-    { name: '财务模型（2024-2028）', status: '✅ 已提交' },
-    { name: '专利清单及申请书', status: '✅ 已提交' },
-    { name: '法务尽调报告', status: '✅ 已提交' },
-    { name: '创始人尽调访谈纪要', status: '✅ 已提交' },
-    { name: '客户访谈纪要（3家）', status: '✅ 已提交' },
-    { name: '竞品对标分析', status: '✅ 已提交' }
-  ],
-  '2': [
-    { name: '商业计划书', status: '✅ 已提交' },
-    { name: '财务模型', status: '✅ 已提交' },
-    { name: '适航取证进度表', status: '✅ 已提交' },
-    { name: '法务尽调报告', status: '⏳ 待补充' },
-    { name: '客户订单合同', status: '✅ 已提交' }
-  ],
-  '3': [
-    { name: '商业计划书', status: '✅ 已提交' },
-    { name: '军品四证', status: '⏳ 待补充' },
-    { name: '财务数据', status: '✅ 已提交' },
-    { name: '法务尽调报告', status: '⏳ 待补充' },
-    { name: '客户访谈纪要', status: '⏳ 待补充' }
-  ]
-};
+async function refreshData() {
+  const btn = document.getElementById('sync-btn');
+  btn.textContent = '🔄 同步中...';
+  btn.classList.add('loading');
+  await loadData();
+  btn.textContent = '🔄 同步数据';
+  btn.classList.remove('loading');
+}
 
-// ===== Page Switching =====
-function switchPage(page) {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  document.getElementById(`page-${page}`).classList.add('active');
-  document.querySelector(`.nav-item[data-page="${page}"]`)?.classList.add('active');
+function getProject(id) { return APP_DATA.projects.find(p => p.id == id); }
+
+function switchPage(page, projectId) {
+  if (projectId) currentProject = projectId;
   currentPage = page;
-  
-  const titles = { 'dashboard':'项目看板','new-project':'新建项目','project-detail':'项目详情','red-team':'红队报告','ic-memo':'投决材料','simulator':'投决会模拟' };
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const el = document.querySelector('.nav-item[data-page="'+page+'"]');
+  if (el) el.classList.add('active');
+  const titles = {dashboard:'项目看板','new-project':'新建项目','project-detail':'项目详情','red-team':'红队报告','ic-memo':'投决材料','simulator':'投决会模拟'};
   document.getElementById('page-title').textContent = titles[page] || '项目看板';
-  
-  if (page === 'project-detail') renderProjectDetail(currentProject);
-  if (page === 'red-team') document.getElementById('nav-detail').style.display = 'block';
-  document.getElementById('nav-detail').style.display = (page === 'project-detail' || page === 'red-team' || page === 'ic-memo') ? 'block' : 'none';
-  if (page === 'ic-memo') renderICMemo();
+  document.getElementById('nav-detail').style.display = (page==='project-detail'||page==='red-team'||page==='ic-memo')?'block':'none';
+  updateUI();
 }
 
-function openProject(id) {
-  currentProject = id;
-  document.getElementById('nav-detail').style.display = 'block';
-  switchPage('project-detail');
+function openProject(id) { currentProject = id; switchPage('project-detail'); }
+
+function updateUI() {
+  const container = document.getElementById('page-content');
+  container.innerHTML = renderCurrentPage();
+  if (currentPage === 'project-detail' && getProject(currentProject)) {
+    renderProjectDetailTabs(getProject(currentProject));
+  }
+  document.getElementById('project-count').textContent = APP_DATA.projects.length;
 }
 
-// ===== Render Project Detail =====
-function renderProjectDetail(id) {
-  const mods = MODULES[id] || MODULES['1'];
-  const names = { '1':'星辰空间','2':'云翼航空','3':'华盾科技' };
-  const sectors = { '1':['space','🚀 商业航天'],'2':['lowalt','🛩️ 低空经济'],'3':['defense','🎯 国防军工'] };
-  const rounds = { '1':'B轮','2':'C轮','3':'A+轮' };
-  const statuses = { '1':'done','2':'draft','3':'pending' };
-  
-  document.getElementById('detail-name').textContent = names[id] || '项目';
-  document.getElementById('detail-sector').textContent = (sectors[id]||sectors['1'])[1];
-  document.getElementById('detail-sector').className = `tag ${(sectors[id]||sectors['1'])[0]}`;
-  document.getElementById('detail-round').textContent = rounds[id] || '';
-  const st = statuses[id]||'done';
-  const stTexts = { done:'✅ 已完成', draft:'📝 分析中', pending:'⏳ 待材料' };
-  document.getElementById('detail-status').textContent = stTexts[st] || '';
-  document.getElementById('detail-status').className = `status ${st}`;
-  
-  const container = document.getElementById('tab-modules');
-  container.innerHTML = mods.map((m, i) => `
-    <div class="module-card">
-      <div class="module-header" onclick="toggleModule(this)">
-        <span>${m.icon} ${m.n} <span class="text-muted" style="font-weight:400;font-size:12px;">— ${m.verdict} · 置信度${m.conf}</span></span>
-        <span>▶</span>
-      </div>
-      <div class="module-body ${i===0?'open':''}">
-        <p>${m.content}</p>
-      </div>
-    </div>
-  `).join('');
-  
-  // Materials
-  const mlist = materials[id] || materials['1'];
-  document.getElementById('material-checklist').innerHTML = mlist.map(m => `
-    <div class="flex flex-center" style="justify-content:space-between;padding:8px 0;border-bottom:1px solid #f0f2f5">
-      <span>${m.name}</span>
-      <span>${m.status}</span>
-    </div>
-  `).join('');
-  
-  // Timeline
-  document.getElementById('timeline-items').innerHTML = `
-    <div class="flex flex-center gap-12" style="padding:8px 0;border-bottom:1px solid #f0f2f5">
-      <span style="color:#3370ff">●</span><span>2026-05-15 18:30</span><span class="text-muted">8模块初稿完成</span>
-    </div>
-    <div class="flex flex-center gap-12" style="padding:8px 0;border-bottom:1px solid #f0f2f5">
-      <span style="color:#3370ff">●</span><span>2026-05-15 14:20</span><span class="text-muted">红队报告生成</span>
-    </div>
-    <div class="flex flex-center gap-12" style="padding:8px 0;border-bottom:1px solid #f0f2f5">
-      <span style="color:#3370ff">●</span><span>2026-05-15 10:00</span><span class="text-muted">法务DD材料补充完成</span>
-    </div>
-    <div class="flex flex-center gap-12" style="padding:8px 0;border-bottom:1px solid #f0f2f5">
-      <span style="color:#00b578">●</span><span>2026-05-14 20:00</span><span class="text-muted">项目创建 · 材料投喂</span>
-    </div>
-  `;
-  
-  // Topbar buttons
-  const topbar = document.getElementById('topbar').querySelector('.topbar-actions');
-  topbar.innerHTML = `
-    <button class="btn btn-sm btn-secondary" onclick="switchPage('red-team')">🔴 红队报告</button>
-    <button class="btn btn-sm btn-warning" onclick="switchPage('ic-memo')">📝 投决材料</button>
-    <button class="btn btn-sm btn-primary" onclick="switchPage('simulator')">🎯 投决会模拟</button>
-    <div class="user-avatar">主</div>
-  `;
-}
-
-function renderICMemo() {
-  // Already rendered in HTML with static demo data
-}
-
-// ===== Tab Switching =====
-function switchTab(tab) {
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-  document.querySelector(`.tab[data-tab="${tab}"]`).classList.add('active');
-  document.getElementById(`tab-${tab}`).classList.add('active');
-}
-
-// ===== Module Toggle =====
-function toggleModule(el) {
-  const body = el.nextElementSibling;
-  body.classList.toggle('open');
-  el.querySelector('span:last-child').textContent = body.classList.contains('open') ? '▼' : '▶';
-}
-function toggleMemo(el) {
-  const body = el.nextElementSibling;
-  body.classList.toggle('open');
-  el.querySelector('span:last-child').textContent = body.classList.contains('open') ? '▼' : '▶';
-}
-
-// ===== New Project =====
-const uploadedFiles = [];
-function showFiles(input) {
-  const list = document.getElementById('file-list');
-  list.innerHTML = '';
-  uploadedFiles.length = 0;
-  for (let f of input.files) {
-    uploadedFiles.push(f.name);
-    list.innerHTML += `<span class="tag">📄 ${f.name}</span>`;
+function renderCurrentPage() {
+  switch(currentPage) {
+    case 'dashboard': return renderDashboard();
+    case 'new-project': return renderNewProject();
+    case 'project-detail': return renderProjectDetail(getProject(currentProject));
+    case 'red-team': return renderRedTeam();
+    case 'ic-memo': return renderICMemo();
+    case 'simulator': return renderSimulator();
+    default: return renderDashboard();
   }
 }
+
+function renderDashboard() {
+  const p = APP_DATA.projects;
+  const active = p.filter(x => x.status==='draft'||x.status==='analyzing').length;
+  const done = p.filter(x => x.status==='done').length;
+  const pending = p.filter(x => x.status==='pending').length;
+  return '<div class="stats-grid">' +
+    '<div class="stat-card"><div class="label">进行中项目</div><div class="value">'+active+'</div><div class="sub">总计 '+p.length+' 个项目</div></div>' +
+    '<div class="stat-card"><div class="label">已完成分析</div><div class="value">'+done+'</div><div class="sub">待上会</div></div>' +
+    '<div class="stat-card"><div class="label">待补充材料</div><div class="value">'+pending+'</div><div class="sub"><span class="text-danger">需跟进</span></div></div>' +
+    '<div class="stat-card"><div class="label">最近更新</div><div class="value" style="font-size:18px;">'+(p.length?p[0].name:'—')+'</div></div>' +
+    '</div>' +
+    '<div class="card"><div class="card-header"><h3>项目列表</h3></div>' +
+    (p.length===0?'<div class="text-muted" style="text-align:center;padding:40px 0;">暂无项目</div>':
+    '<table class="table"><thead><tr><th>项目名称</th><th>赛道</th><th>轮次</th><th>状态</th><th>进度</th><th>操作</th></tr></thead><tbody>' +
+    p.map(x => '<tr onclick="openProject(\''+x.id+'\')" style="cursor:pointer"><td><strong>'+x.name+'</strong><br><span class="text-muted" style="font-size:12px;">'+(x.description||'')+'</span></td><td><span class="tag '+x.sector+'">'+x.sectorLabel+'</span></td><td>'+x.round+'</td><td><span class="status '+x.status+'">'+x.statusLabel+'</span></td><td>'+x.modulesDone+'/'+x.modulesTotal+' 模块</td><td><button class="btn btn-sm btn-primary" onclick="event.stopPropagation();openProject(\''+x.id+'\')">查看</button></td></tr>').join('') +
+    '</tbody></table>') + '</div>';
+}
+
+function renderNewProject() {
+  return '<div class="card"><div class="card-header"><h3>新建项目</h3></div>' +
+    '<div class="form-row"><div class="form-group"><label>项目名称 *</label><input type="text" placeholder="如：星辰空间" id="new-name"></div>' +
+    '<div class="form-group"><label>赛道 *</label><select id="new-sector"><option value="">请选择</option><option value="space">🚀 商业航天</option><option value="lowalt">🛩️ 低空经济</option><option value="defense">🎯 国防军工</option><option value="ai">🧠 人工智能</option><option value="embodied">🤖 具身智能</option></select></div></div>' +
+    '<div class="form-row"><div class="form-group"><label>融资轮次 *</label><select id="new-round"><option>天使轮</option><option>Pre-A</option><option>A轮</option><option>A+轮</option><option>B轮</option><option>C轮</option></select></div>' +
+    '<div class="form-group"><label>拟投资金额（万元）</label><input type="text" id="new-amount" placeholder="如：5000"></div></div>' +
+    '<div class="form-group"><label>项目简介</label><textarea id="new-desc" placeholder="简要描述公司做什么、核心产品"></textarea></div>' +
+    '<div class="form-group"><label>分析模式</label><select id="new-mode"><option value="fast">⚡ 快速扫描</option><option value="deep" selected>🔬 深度尽调</option><option value="track">📡 持续跟踪</option></select></div>' +
+    '<div style="margin-top:20px;display:flex;gap:12px"><button class="btn btn-primary" onclick="createProject()">🚀 启动分析</button><button class="btn btn-secondary" onclick="switchPage(\'dashboard\')">取消</button></div></div>';
+}
+
 function createProject() {
   const name = document.getElementById('new-name').value.trim();
   if (!name) { alert('请输入项目名称'); return; }
-  alert(`✅ 项目"${name}"已创建，开始分析！\n\nAI正在处理 ${uploadedFiles.length} 份材料...\n模式：${document.getElementById('new-mode').options[document.getElementById('new-mode').selectedIndex].text}`);
+  alert('✅ 项目"'+name+'"已创建！\n\n请告诉我：在群里说"帮我分析'+name+'"\n我分析完后你点"同步数据"刷新即可');
   switchPage('dashboard');
 }
 
-// ===== Simulator =====
-function updateSimProject(id) {
-  const names = { '1':'星辰空间 — 商业航天 B轮', '2':'云翼航空 — 低空经济 C轮', '3':'华盾科技 — 国防军工 A+轮' };
-  const msgs = document.querySelector('.chat-box');
-  msgs.innerHTML = `
-    <div class="chat-msg">
-      <div class="sender"><span class="name">🤖 投决委（AI）</span> · 刚刚</div>
-      <div class="text">已切换至 <strong>${names[id]}</strong>。<br><br>我先问第一个问题：这个项目的核心投资逻辑是什么？为什么这个时点值得下手？</div>
-    </div>
-    <div class="chat-input" style="border-top:1px solid #e8eaed;">
-      <input type="text" placeholder="输入你的回答..." id="sim-input">
-      <button class="btn btn-sm btn-primary" onclick="sendSimMsg()">发送</button>
-    </div>
-  `;
-}
-function sendSimMsg() {
-  const input = document.getElementById('sim-input');
-  if (!input || !input.value.trim()) return;
-  const text = input.value.trim();
-  input.value = '';
-  
-  const chat = document.querySelector('.chat-box');
-  // Add user message
-  const userMsg = document.createElement('div');
-  userMsg.className = 'chat-msg';
-  userMsg.innerHTML = `<div class="sender"><span class="name">🧑‍💼 你</span> · 刚刚</div><div class="text">${text}</div>`;
-  chat.insertBefore(userMsg, chat.lastElementChild);
-  
-  // AI response
-  setTimeout(() => {
-    const aiMsg = document.createElement('div');
-    aiMsg.className = 'chat-msg';
-    aiMsg.innerHTML = `<div class="sender"><span class="name">🤖 投决委（AI）</span> · 刚刚</div>
-      <div class="text">回答有内容，但建议：<br>
-      1️⃣ 用具体数字替代定性描述（"市场增长很快"→"CAGR 35%"）<br>
-      2️⃣ 主动提及核心风险表明你已充分考虑<br>
-      3️⃣ 用对标案例增强说服力<br><br>
-      <strong>追问：</strong>你刚提到这个时点好，但竞争对手也在融资，你怎么看竞争格局的变化？</div>`;
-    chat.insertBefore(aiMsg, chat.lastElementChild);
-    chat.scrollTop = chat.scrollHeight;
-  }, 1000);
+function renderProjectDetail(proj) {
+  if (!proj) return '<div class="card"><div class="text-muted" style="text-align:center;padding:40px;">请先选择一个项目</div></div>';
+  const c = {done:'done',draft:'draft',pending:'pending'};
+  return '<div class="card" style="padding:16px 20px;"><div class="flex flex-center" style="justify-content:space-between"><div><h3 style="font-size:18px;">'+proj.name+'</h3><div class="flex gap-8" style="margin-top:6px"><span class="tag '+proj.sector+'">'+proj.sectorLabel+'</span><span class="tag">'+proj.round+'</span><span class="status '+(c[proj.status]||'pending')+'">'+proj.statusLabel+'</span></div></div><div class="flex gap-8"><button class="btn btn-sm btn-primary" onclick="switchPage(\'red-team\')">🔴 红队报告</button><button class="btn btn-sm btn-warning" onclick="switchPage(\'ic-memo\')">📝 投决材料</button></div></div></div>' +
+    '<div class="tabs"><div class="tab active" data-tab="modules" onclick="switchTab(\'modules\')">8 模块分析</div><div class="tab" data-tab="materials" onclick="switchTab(\'materials\')">材料清单</div><div class="tab" data-tab="timeline" onclick="switchTab(\'timeline\')">动态时间线</div></div>' +
+    '<div id="tab-modules" class="tab-content active"></div><div id="tab-materials" class="tab-content"></div><div id="tab-timeline" class="tab-content"></div>';
 }
 
-// ===== Init =====
-switchPage('dashboard');
+function renderProjectDetailTabs(proj) {
+  const mods = proj.modules || [];
+  document.getElementById('tab-modules').innerHTML = mods.length===0
+    ? '<div class="card"><div class="text-muted" style="text-align:center;padding:20px;">分析尚未完成，请在群里告诉我分析此项目</div></div>'
+    : mods.map((m,i) => '<div class="module-card"><div class="module-header" onclick="toggleModule(this)"><span>'+m.icon+' '+m.name+' <span class="text-muted" style="font-weight:400;font-size:12px;">— '+m.verdict+' · 置信度'+m.confidence+'</span></span><span>'+(i===0?'▼':'▶')+'</span></div><div class="module-body'+(i===0?' open':'')+'"><p>'+m.content+'</p></div></div>').join('');
+  const ml = proj.materials || [];
+  document.getElementById('tab-materials').innerHTML = '<div class="card"><div class="card-header"><h3>材料完整性检查</h3></div>'+(ml.length===0?'<div class="text-muted" style="text-align:center;padding:20px;">暂无材料</div>':ml.map(m => '<div class="flex flex-center" style="justify-content:space-between;padding:8px 0;border-bottom:1px solid #f0f2f5"><span>'+m.name+'</span><span>'+m.status+'</span></div>').join(''))+'</div>';
+  const tl = proj.timeline || [];
+  document.getElementById('tab-timeline').innerHTML = '<div class="card"><div class="card-header"><h3>分析时间线</h3></div>'+(tl.length===0?'<div class="text-muted" style="text-align:center;padding:20px;">暂无动态</div>':tl.map(t => '<div class="flex flex-center gap-12" style="padding:8px 0;border-bottom:1px solid #f0f2f5"><span style="color:'+(t.active?'#3370ff':'#00b578')+'">●</span><span>'+t.date+'</span><span class="text-muted">'+t.event+'</span></div>').join(''))+'</div>';
+}
+
+function renderRedTeam() {
+  const proj = getProject(currentProject);
+  const risks = (proj&&proj.risks)?proj.risks:[];
+  if (!proj||risks.length===0) return '<div class="card"><div class="text-muted" style="text-align:center;padding:40px;">该项目暂无红队报告</div></div>';
+  const icons = {high:'🔴',mid:'🟡',low:'🟢'};
+  return '<div class="card" style="border-left: 4px solid #f53f3f;"><div class="flex flex-center gap-12" style="margin-bottom:12px"><span style="font-size:24px;">🔴</span><div><h3 style="font-size:16px;">红队评估报告 · '+proj.name+'</h3><p class="text-muted" style="font-size:12px;">独立于主分析，AI 主动挑战关键假设</p></div></div>' +
+    risks.map(r => '<div class="risk-item"><div class="risk-icon '+(r.level==='high'?'red':'yellow')+'">'+(icons[r.level]||'🟡')+'</div><div class="risk-content"><div class="title">'+r.title+' <span class="risk-tag '+r.level+'">'+(r.level==='high'?'高':'中')+'</span></div><div class="desc">'+r.desc+'</div></div></div>').join('') +
+    '<div class="report-actions"><button class="btn btn-warning btn-sm" onclick="alert(\'导出功能开发中\')">📋 导出红队报告</button><button class="btn btn-secondary btn-sm" onclick="switchPage(\'simulator\')">🎯 模拟问答</button></div></div>';
+}
+
+function renderICMemo() {
+  const proj = getProject(currentProject);
+  if (!proj||!proj.modules||proj.modules.length<5) return '<div class="card"><div class="text-muted" style="text-align:center;padding:40px;">请选择一个已完成完整分析的项目</div></div>';
+  return '<div class="card"><div class="flex flex-center" style="justify-content:space-between;margin-bottom:16px"><h3 style="font-size:16px;">📝 投资建议书 · '+proj.name+'</h3><div class="flex gap-8"><button class="btn btn-sm btn-primary" onclick="alert(\'导出功能开发中\')">导出 PDF</button></div></div>' +
+    '<div class="module-card"><div class="module-header" onclick="toggleMemo(this)">📄 执行摘要 <span>▼</span></div><div class="module-body open"><p><strong>项目：</strong>'+proj.name+' — '+proj.description+'</p><p><strong>赛道判断：</strong>'+(proj.modules[0]?.verdict||'待定')+'</p><p><strong>投资建议：</strong><span class="text-success"><strong>待投决会讨论</strong></span></p><p><strong>拟投资金额：</strong>￥'+(proj.amount||'待定')+'万</p></div></div>' +
+    '<div class="module-card"><div class="module-header" onclick="toggleMemo(this)">📊 核心分析 <span>▶</span></div><div class="module-body">'+proj.modules.slice(0,3).map(m => '<p><strong>'+m.icon+' '+m.name+'：</strong>'+m.verdict+'（置信度'+m.confidence+'）</p>').join('')+'</div></div>' +
+    '<div class="module-card"><div class="module-header" onclick="toggleMemo(this)">❓ 投决会 Q&A 预判 <span>▶</span></div><div class="module-body"><p><strong>Q：这个赛道为什么值得下注？</strong></p><p>A：政策端利好 + 市场需求明确 + 技术成熟度提升。</p></div></div></div>';
+}
+
+function renderSimulator() {
+  return '<div class="card"><div class="flex flex-center gap-12" style="margin-bottom:16px"><span style="font-size:24px;">🎯</span><div><h3 style="font-size:16px;">投决会模拟问答</h3><p class="text-muted" style="font-size:12px;">我来扮演投决委，你回答问题，我帮你优化话术</p></div></div>' +
+    '<div class="form-group"><label>选择项目</label><select id="sim-project-select" onchange="updateSimProject(this.value)">'+APP_DATA.projects.map(p => '<option value="'+p.id+'">'+p.name+' — '+p.sectorLabel+' '+p.round+'</option>').join('')+'</select></div>' +
+    '<div class="chat-box" id="sim-chat"><div class="chat-msg"><div class="sender"><span class="name">🤖 投决委（AI）</span></div><div class="text">选择上面的项目开始模拟问答。我会扮演投决委提问，你来回答。</div></div>' +
+    '<div class="chat-input" style="border-top:1px solid #e8eaed;"><input type="text" placeholder="输入你的回答..." id="sim-input"><button class="btn btn-sm btn-primary" onclick="sendSimMsg()">发送</button></div></div></div>';
+}
+
+function updateSimProject(id) {
+  const proj = getProject(id); if (!proj) return;
+  const chat = document.getElementById('sim-chat');
+  chat.innerHTML = '<div class="chat-msg"><div class="sender"><span class="name">🤖 投决委（AI）</span></div><div class="text">已切换至 <strong>'+proj.name+'</strong>。第一个问题：为什么这个项目值得在这个时点下注？</div></div>' +
+    '<div class="chat-input" style="border-top:1px solid #e8eaed;"><input type="text" id="sim-input" placeholder="输入你的回答..."><button class="btn btn-sm btn-primary" onclick="sendSimMsg()">发送</button></div>';
+}
+
+function sendSimMsg() {
+  const input = document.getElementById('sim-input');
+  if (!input||!input.value.trim()) return;
+  const text = input.value.trim(); input.value = '';
+  const chat = document.getElementById('sim-chat');
+  const u = document.createElement('div'); u.className = 'chat-msg';
+  u.innerHTML = '<div class="sender"><span class="name">🧑‍💼 你</span></div><div class="text">'+text+'</div>';
+  chat.insertBefore(u, chat.lastElementChild);
+  setTimeout(() => {
+    const a = document.createElement('div'); a.className = 'chat-msg';
+    a.innerHTML = '<div class="sender"><span class="name">🤖 投决委（AI）</span></div><div class="text">回答有内容。建议用具体数字增强说服力。<br><strong>追问：</strong>竞争对手也在融资，你怎么看竞争格局？</div>';
+    chat.insertBefore(a, chat.lastElementChild);
+  }, 800);
+}
+
+function switchTab(t) {
+  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(x=>x.classList.remove('active'));
+  document.querySelector('.tab[data-tab="'+t+'"]').classList.add('active');
+  document.getElementById('tab-'+t).classList.add('active');
+}
+function toggleModule(el) {
+  const b = el.nextElementSibling; b.classList.toggle('open');
+  el.querySelector('span:last-child').textContent = b.classList.contains('open')?'▼':'▶';
+}
+function toggleMemo(el) {
+  const b = el.nextElementSibling; b.classList.toggle('open');
+  el.querySelector('span:last-child').textContent = b.classList.contains('open')?'▼':'▶';
+}
+
+loadData();
 </script>
 </body>
 </html>
