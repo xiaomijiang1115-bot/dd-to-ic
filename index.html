@@ -207,25 +207,27 @@ function Pd(){
   const active=p.filter(x=>x.status==='draft'||x.status==='analyzing').length;
   const done=p.filter(x=>x.status==='done').length;
   const pending=p.filter(x=>x.status==='pending').length;
-  return '<div class="stats-grid">'+
-    '<div class="stat-card"><div class="label">进行中项目</div><div class="value">'+active+'</div><div class="sub">总计 '+p.length+' 个项目</div></div>'+
-    '<div class="stat-card"><div class="label">已完成分析</div><div class="value">'+done+'</div><div class="sub">待上会</div></div>'+
-    '<div class="stat-card"><div class="label">待补充材料</div><div class="value">'+pending+'</div><div class="sub"><span class="text-danger">需跟进</span></div></div>'+
-    '<div class="stat-card"><div class="label">最近更新</div><div class="value" style="font-size:18px">'+(p.length?p[0].name:'—')+'</div></div></div>'+
-    '<div class="card"><div class="card-header"><h3>项目列表</h3>'+
-    (APP_DATA.projects.length?'':
-    '<button class="btn btn-sm btn-primary" onclick="switchPage(\'new-project\')">+ 新建</button>')+
-    '</div>'+
-    (p.length===0?'<div class="text-muted" style="text-align:center;padding:40px 0">暂无项目，点击右上角"新建项目"开始</div>':
-    '<table class="table"><thead><tr><th>公司全称</th><th>简称</th><th>赛道</th><th>轮次</th><th>状态</th><th>进度</th><th>操作</th></tr></thead><tbody>'+
-    p.map(x=>'<tr onclick="openProject(\''+x.id+'\')" style="cursor:pointer">'+
-      '<td><strong>'+(x.companyFullName||x.name)+'</strong><br><span class="text-muted" style="font-size:12px">'+(x.description||'')+'</span></td>'+
+  return '<div style="margin-bottom:16px;background:#fff;border-radius:12px;border:1px solid #e8eaed;padding:16px 20px;display:flex;align-items:center;justify-content:space-between">'+
+    '<div><h3 style="font-size:16px;margin-bottom:4px;">CJ\u6295\u51b3\u7cfb\u7edf</h3><p class="text-muted" style="font-size:13px;">\u5168\u90e8\u9879\u76ee\u6570: '+p.length+'</p></div>'+
+    '<button class="btn btn-primary" onclick="switchPage(\'new-project\')">+ \u65b0\u5efa\u9879\u76ee</button></div>'+
+    '<div class="stats-grid">'+
+    '<div class="stat-card"><div class="label">\u8fdb\u884c\u4e2d\u9879\u76ee</div><div class="value">'+active+'</div><div class="sub">\u603b\u8ba1 '+p.length+' \u4e2a\u9879\u76ee</div></div>'+
+    '<div class="stat-card"><div class="label">\u5df2\u5b8c\u6210\u5206\u6790</div><div class="value">'+done+'</div><div class="sub">\u5f85\u4e0a\u4f1a</div></div>'+
+    '<div class="stat-card"><div class="label">\u5f85\u8865\u5145\u6750\u6599</div><div class="value">'+pending+'</div><div class="sub"><span class="text-danger">\u9700\u8ddf\u8fdb</span></div></div>'+
+    '<div class="stat-card"><div class="label">\u6700\u65b0\u66f4\u65b0</div><div class="value" style="font-size:18px">'+(p.length?p[0].name:'\u2014')+'</div></div></div>'+
+    '<div class="card"><div class="card-header"><h3>\u9879\u76ee\u5217\u8868</h3></div>'+
+    (p.length===0?'<div class="text-muted" style="text-align:center;padding:40px 0">\u6682\u65e0\u9879\u76ee\uff0c\u70b9\u51fb\u4e0a\u65b9\u201c+\u65b0\u5efa\u9879\u76ee\u201d\u5f00\u59cb</div>':
+    '<table class="table"><thead><tr><th>\u516c\u53f8\u5168\u79f0</th><th>\u7b80\u79f0</th><th>\u8d5b\u9053</th><th>\u8f6e\u6b21</th><th>\u72b6\u6001</th><th>\u8fdb\u5ea6</th><th>\u64cd\u4f5c</th></tr></thead><tbody>'+
+    p.map(function(x){
+      return '<tr style="cursor:pointer" onclick="this.querySelector('.btn-primary').click()">'+
+      '<td><strong>'+x.companyFullName+'</strong><br><span class="text-muted" style="font-size:12px">'+(x.description||'')+'</span></td>'+
       '<td><span class="tag abbr">'+x.name+'</span></td>'+
       '<td><span class="tag '+x.sector+'">'+x.sectorLabel+'</span></td>'+
       '<td>'+x.round+'</td>'+
       '<td><span class="status '+x.status+'">'+x.statusLabel+'</span></td>'+
       '<td>'+x.modulesDone+'/'+x.modulesTotal+'</td>'+
-      '<td><button class="btn btn-sm btn-primary" onclick="event.stopPropagation();openProject(\''+x.id+'\')">查看</button></td></tr>').join('')+
+      '<td><button class="btn btn-sm btn-primary" onclick="openProject(\''+x.id+'\')">\u67e5\u770b</button></td></tr>';
+    }).join('')+
     '</tbody></table>')+'</div>';
 }
 
