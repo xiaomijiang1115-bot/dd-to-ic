@@ -280,7 +280,7 @@ function Pdt(proj){
   return '<div class="card" style="padding:16px 20px"><div class="flex flex-center" style="justify-content:space-between">'+
     '<div><h3 style="font-size:18px">'+pName(proj)+'</h3>'+
     '<div class="flex gap-8" style="margin-top:6px"><span class="tag '+proj.sector+'">'+proj.sectorLabel+'</span><span class="tag">'+proj.round+'</span><span class="status '+(c[proj.status]||'pending')+'">'+proj.statusLabel+'</span></div></div>'+
-    '<div class="flex gap-8"><button class="btn btn-sm btn-primary" onclick="switchPage(\'red-team\')">🔴 红队报告</button><button class="btn btn-sm btn-warning" onclick="switchPage(\'ic-memo\')">📝 投决材料</button></div></div></div>'+
+    '<div class="flex gap-8"><button class="btn btn-sm btn-primary" onclick="switchPage(\'red-team\')">🔴 红队报告</button><button class="btn btn-sm btn-success" onclick="deepAnalysis()">🔬 深度分析</button><button class="btn btn-sm btn-warning" onclick="switchPage(\'ic-memo\')">📝 投决材料</button></div></div></div>'+
     '<div class="tabs"><div class="tab active" data-tab="modules" onclick="switchTab(\'modules\')">8 模块分析</div><div class="tab" data-tab="materials" onclick="switchTab(\'materials\')">材料清单</div><div class="tab" data-tab="timeline" onclick="switchTab(\'timeline\')">动态时间线</div></div>'+
     '<div id="tab-modules" class="tab-content active"></div><div id="tab-materials" class="tab-content"></div><div id="tab-timeline" class="tab-content"></div>';
 }
@@ -353,6 +353,19 @@ function toggleModule(el){const b=el.nextElementSibling;b.classList.toggle('open
 function toggleMemo(el){const b=el.nextElementSibling;b.classList.toggle('open');el.querySelector('span:last-child').textContent=b.classList.contains('open')?'▼':'▶'}
 
 loadData();
+
+
+function deepAnalysis(){
+  const proj=getProject(currentProject);
+  if(!proj){alert('\u8bf7\u5148\u9009\u62e9\u4e00\u4e2a\u9879\u76ee');return;}
+  const msg='\ud83d\udd2c \u5e2e\u6211\u6df1\u5ea6\u5206\u6790 '+proj.name+'\uff08'+(proj.companyFullName||'')+'\uff09';
+  if(proj.feishuUrl)msg+='\n\ud83d\udcce \u6587\u6863\uff1a'+proj.feishuUrl;
+  const ta=document.createElement('textarea');
+  ta.value=msg;document.body.appendChild(ta);ta.select();
+  try{document.execCommand('copy');alert('\u2705 \u5df2\u590d\u5236\uff01\n\u5728\u7fa4\u91cc\u53d1\uff1a'+msg);}
+  catch(e){prompt('\u590d\u5236\u53d1\u5230\u7fa4\u91cc\uff1a',msg);}
+  document.body.removeChild(ta);
+}
 
 function requestAnalysis(){
   const proj = getProject(currentProject);
