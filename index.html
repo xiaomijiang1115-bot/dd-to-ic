@@ -5,130 +5,123 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>DD-to-IC · 尽调投决系统</title>
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif; background: #f5f6f7; color: #1f2a3a; font-size: 14px; }
-    a { text-decoration: none; color: #3370ff; }
-    .app { display: flex; min-height: 100vh; }
-    .sidebar { width: 220px; background: #fff; border-right: 1px solid #e8eaed; display: flex; flex-direction: column; position: fixed; top: 0; left: 0; height: 100vh; z-index: 100; }
-    .sidebar-header { padding: 20px 16px; border-bottom: 1px solid #e8eaed; }
-    .sidebar-header h1 { font-size: 16px; font-weight: 600; color: #3370ff; display: flex; align-items: center; gap: 8px; }
-    .sidebar-header h1 .logo { width: 28px; height: 28px; background: #3370ff; border-radius: 6px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 14px; font-weight: 700; }
-    .sidebar-nav { flex: 1; padding: 12px 8px; }
-    .nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 8px; cursor: pointer; color: #4e5a6b; font-size: 14px; transition: all .15s; margin-bottom: 2px; }
-    .nav-item:hover { background: #f0f2f5; }
-    .nav-item.active { background: #e8f0ff; color: #3370ff; font-weight: 500; }
-    .nav-item .icon { font-size: 18px; width: 22px; text-align: center; }
-    .nav-item .badge { margin-left: auto; background: #e8eaed; color: #4e5a6b; font-size: 11px; padding: 1px 8px; border-radius: 10px; }
-    .sidebar-footer { padding: 12px 8px; border-top: 1px solid #e8eaed; }
-    .sidebar-footer .nav-item { color: #8c9aa8; font-size: 12px; }
-    .main { margin-left: 220px; flex: 1; padding: 0; }
-    .topbar { background: #fff; border-bottom: 1px solid #e8eaed; padding: 12px 32px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 50; }
-    .topbar h2 { font-size: 18px; font-weight: 600; }
-    .topbar-actions { display: flex; gap: 12px; align-items: center; }
-    .topbar .user-avatar { width: 32px; height: 32px; border-radius: 50%; background: #3370ff; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; cursor: pointer; }
-    .topbar .sync-btn { background: none; border: 1px solid #d0d5dd; border-radius: 6px; padding: 6px 12px; cursor: pointer; font-size: 12px; color: #4e5a6b; }
-    .topbar .sync-btn:hover { background: #f5f6f7; }
-    .topbar .sync-btn.loading { opacity: 0.6; pointer-events: none; }
-    .content { padding: 24px 32px; }
-    .loading-overlay { position: fixed; inset: 0; background: rgba(255,255,255,.8); z-index: 999; display: flex; align-items: center; justify-content: center; font-size: 16px; color: #4e5a6b; }
-    .loading-overlay.hidden { display: none; }
-    .btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 20px; border-radius: 6px; border: 1px solid transparent; font-size: 14px; cursor: pointer; transition: all .15s; font-weight: 500; }
-    .btn-primary { background: #3370ff; color: #fff; border-color: #3370ff; }
-    .btn-primary:hover { background: #2857d9; }
-    .btn-secondary { background: #fff; color: #4e5a6b; border-color: #d0d5dd; }
-    .btn-secondary:hover { background: #f5f6f7; }
-    .btn-success { background: #00b578; color: #fff; border-color: #00b578; }
-    .btn-warning { background: #ff8800; color: #fff; border-color: #ff8800; }
-    .btn-danger { background: #f53f3f; color: #fff; border-color: #f53f3f; }
-    .btn-sm { padding: 4px 12px; font-size: 12px; }
-    .card { background: #fff; border-radius: 12px; border: 1px solid #e8eaed; padding: 20px; margin-bottom: 16px; }
-    .card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
-    .card-header h3 { font-size: 15px; font-weight: 600; }
-    .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
-    .stat-card { background: #fff; border-radius: 12px; border: 1px solid #e8eaed; padding: 20px; }
-    .stat-card .label { font-size: 12px; color: #8c9aa8; margin-bottom: 4px; }
-    .stat-card .value { font-size: 28px; font-weight: 700; color: #1f2a3a; }
-    .stat-card .sub { font-size: 12px; color: #00b578; margin-top: 4px; }
-    .table { width: 100%; border-collapse: collapse; }
-    .table th { text-align: left; padding: 12px 16px; font-size: 12px; color: #8c9aa8; font-weight: 500; border-bottom: 1px solid #e8eaed; }
-    .table td { padding: 14px 16px; border-bottom: 1px solid #f0f2f5; font-size: 14px; }
-    .table tr:hover td { background: #fafbfc; }
-    .table .status { display: inline-flex; align-items: center; gap: 4px; padding: 2px 10px; border-radius: 10px; font-size: 12px; }
-    .status.done { background: #e8f8f0; color: #00b578; }
-    .status.analyzing { background: #fff3e0; color: #ff8800; }
-    .status.pending { background: #f0f2f5; color: #8c9aa8; }
-    .status.draft { background: #e8f0ff; color: #3370ff; }
-    .tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 12px; background: #f0f2f5; color: #4e5a6b; margin: 0 2px; }
-    .tag.space { background: #e8f0ff; color: #3370ff; }
-    .tag.lowalt { background: #e8f8f0; color: #00b578; }
-    .tag.defense { background: #fff3e0; color: #cc6600; }
-    .tag.ai { background: #f0e8ff; color: #7b61ff; }
-    .form-group { margin-bottom: 16px; }
-    .form-group label { display: block; font-size: 13px; font-weight: 500; margin-bottom: 6px; color: #4e5a6b; }
-    .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 10px 12px; border: 1px solid #d0d5dd; border-radius: 8px; font-size: 14px; outline: none; transition: border .15s; font-family: inherit; }
-    .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: #3370ff; box-shadow: 0 0 0 2px rgba(51,112,255,.12); }
-    .form-group textarea { resize: vertical; min-height: 80px; }
-    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-    .tabs { display: flex; gap: 0; border-bottom: 1px solid #e8eaed; margin-bottom: 20px; }
-    .tab { padding: 10px 20px; cursor: pointer; color: #8c9aa8; font-size: 14px; border-bottom: 2px solid transparent; transition: all .15s; }
-    .tab:hover { color: #4e5a6b; }
-    .tab.active { color: #3370ff; border-bottom-color: #3370ff; font-weight: 500; }
-    .tab-content { display: none; }
-    .tab-content.active { display: block; }
-    .module-card { border: 1px solid #e8eaed; border-radius: 10px; margin-bottom: 12px; overflow: hidden; }
-    .module-header { padding: 14px 16px; background: #fafbfc; cursor: pointer; display: flex; align-items: center; justify-content: space-between; font-weight: 500; }
-    .module-header:hover { background: #f0f2f5; }
-    .module-body { padding: 16px; display: none; border-top: 1px solid #e8eaed; }
-    .module-body.open { display: block; }
-    .module-body p { line-height: 1.7; color: #4e5a6b; margin-bottom: 8px; }
-    .risk-item { display: flex; gap: 12px; padding: 12px 0; border-bottom: 1px solid #f0f2f5; }
-    .risk-item:last-child { border-bottom: none; }
-    .risk-icon { width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
-    .risk-icon.red { background: #fff1f0; }
-    .risk-icon.yellow { background: #fff7e6; }
-    .risk-content { flex: 1; }
-    .risk-content .title { font-weight: 500; margin-bottom: 4px; }
-    .risk-content .desc { font-size: 13px; color: #6b7a8a; line-height: 1.5; }
-    .risk-tag { font-size: 11px; padding: 1px 6px; border-radius: 4px; margin-left: 8px; }
-    .risk-tag.high { background: #fff1f0; color: #f53f3f; }
-    .risk-tag.mid { background: #fff7e6; color: #ff8800; }
-    .risk-tag.low { background: #e8f8f0; color: #00b578; }
-    .report-actions { display: flex; gap: 8px; margin-top: 16px; flex-wrap: wrap; }
-    .chat-box { border: 1px solid #e8eaed; border-radius: 10px; overflow: hidden; }
-    .chat-msg { padding: 12px 16px; border-bottom: 1px solid #f0f2f5; }
-    .chat-msg:last-child { border-bottom: none; }
-    .chat-msg .sender { font-size: 12px; color: #8c9aa8; margin-bottom: 4px; }
-    .chat-msg .sender .name { font-weight: 500; color: #1f2a3a; }
-    .chat-msg .text { line-height: 1.6; }
-    .chat-input { display: flex; gap: 8px; padding: 12px; border-top: 1px solid #e8eaed; }
-    .chat-input input { flex: 1; border: 1px solid #d0d5dd; border-radius: 6px; padding: 8px 12px; outline: none; }
-    .chat-input input:focus { border-color: #3370ff; }
-    .upload-zone { border: 2px dashed #d0d5dd; border-radius: 12px; padding: 40px; text-align: center; cursor: pointer; transition: all .2s; }
-    .upload-zone:hover { border-color: #3370ff; background: #f8faff; }
-    .upload-zone .icon { font-size: 40px; margin-bottom: 12px; }
-    .upload-zone p { color: #8c9aa8; font-size: 13px; }
-    .text-muted { color: #8c9aa8; }
-    .text-danger { color: #f53f3f; }
-    .text-success { color: #00b578; }
-    .flex { display: flex; }
-    .flex-center { align-items: center; }
-    .gap-8 { gap: 8px; }
-    .gap-12 { gap: 12px; }
-    .mt-16 { margin-top: 16px; }
-    .mb-16 { margin-bottom: 16px; }
-    .hidden { display: none !important; }
-    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.3); z-index: 200; display: none; align-items: center; justify-content: center; }
-    .modal-overlay.open { display: flex; }
-    .modal { background: #fff; border-radius: 16px; width: 600px; max-width: 90vw; max-height: 85vh; overflow-y: auto; padding: 32px; }
-    .modal h2 { font-size: 18px; margin-bottom: 20px; }
-    @media (max-width: 768px) {
-      .sidebar { display: none; }
-      .main { margin-left: 0; }
-      .content { padding: 16px; }
-      .stats-grid { grid-template-columns: repeat(2, 1fr); }
-      .form-row { grid-template-columns: 1fr; }
-      .topbar { padding: 12px 16px; }
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;background:#f5f6f7;color:#1f2a3a;font-size:14px}
+    a{text-decoration:none;color:#3370ff}
+    .app{display:flex;min-height:100vh}
+    .sidebar{width:220px;background:#fff;border-right:1px solid #e8eaed;display:flex;flex-direction:column;position:fixed;top:0;left:0;height:100vh;z-index:100}
+    .sidebar-header{padding:20px 16px;border-bottom:1px solid #e8eaed}
+    .sidebar-header h1{font-size:16px;font-weight:600;color:#3370ff;display:flex;align-items:center;gap:8px}
+    .sidebar-header h1 .logo{width:28px;height:28px;background:#3370ff;border-radius:6px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;font-weight:700}
+    .sidebar-nav{flex:1;padding:12px 8px}
+    .nav-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;cursor:pointer;color:#4e5a6b;font-size:14px;transition:all .15s;margin-bottom:2px}
+    .nav-item:hover{background:#f0f2f5}
+    .nav-item.active{background:#e8f0ff;color:#3370ff;font-weight:500}
+    .nav-item .icon{font-size:18px;width:22px;text-align:center}
+    .nav-item .badge{margin-left:auto;background:#e8eaed;color:#4e5a6b;font-size:11px;padding:1px 8px;border-radius:10px}
+    .sidebar-footer{padding:12px 8px;border-top:1px solid #e8eaed}
+    .sidebar-footer .nav-item{color:#8c9aa8;font-size:12px}
+    .main{margin-left:220px;flex:1;padding:0}
+    .topbar{background:#fff;border-bottom:1px solid #e8eaed;padding:12px 32px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
+    .topbar h2{font-size:18px;font-weight:600}
+    .topbar-actions{display:flex;gap:12px;align-items:center}
+    .topbar .user-avatar{width:32px;height:32px;border-radius:50%;background:#3370ff;color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;cursor:pointer}
+    .topbar .sync-btn{background:none;border:1px solid #d0d5dd;border-radius:6px;padding:6px 12px;cursor:pointer;font-size:12px;color:#4e5a6b}
+    .topbar .sync-btn:hover{background:#f5f6f7}
+    .topbar .sync-btn.loading{opacity:0.6;pointer-events:none}
+    .content{padding:24px 32px}
+    .loading-overlay{position:fixed;inset:0;background:rgba(255,255,255,.8);z-index:999;display:flex;align-items:center;justify-content:center;font-size:16px;color:#4e5a6b}
+    .loading-overlay.hidden{display:none}
+    .btn{display:inline-flex;align-items:center;gap:6px;padding:8px 20px;border-radius:6px;border:1px solid transparent;font-size:14px;cursor:pointer;transition:all .15s;font-weight:500}
+    .btn-primary{background:#3370ff;color:#fff;border-color:#3370ff}
+    .btn-primary:hover{background:#2857d9}
+    .btn-secondary{background:#fff;color:#4e5a6b;border-color:#d0d5dd}
+    .btn-secondary:hover{background:#f5f6f7}
+    .btn-success{background:#00b578;color:#fff;border-color:#00b578}
+    .btn-warning{background:#ff8800;color:#fff;border-color:#ff8800}
+    .btn-sm{padding:4px 12px;font-size:12px}
+    .card{background:#fff;border-radius:12px;border:1px solid #e8eaed;padding:20px;margin-bottom:16px}
+    .card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+    .card-header h3{font-size:15px;font-weight:600}
+    .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px}
+    .stat-card{background:#fff;border-radius:12px;border:1px solid #e8eaed;padding:20px}
+    .stat-card .label{font-size:12px;color:#8c9aa8;margin-bottom:4px}
+    .stat-card .value{font-size:28px;font-weight:700;color:#1f2a3a}
+    .table{width:100%;border-collapse:collapse}
+    .table th{text-align:left;padding:12px 16px;font-size:12px;color:#8c9aa8;font-weight:500;border-bottom:1px solid #e8eaed}
+    .table td{padding:14px 16px;border-bottom:1px solid #f0f2f5;font-size:14px}
+    .table tr:hover td{background:#fafbfc}
+    .table .status{display:inline-flex;align-items:center;gap:4px;padding:2px 10px;border-radius:10px;font-size:12px}
+    .status.done{background:#e8f8f0;color:#00b578}
+    .status.analyzing{background:#fff3e0;color:#ff8800}
+    .status.pending{background:#f0f2f5;color:#8c9aa8}
+    .status.draft{background:#e8f0ff;color:#3370ff}
+    .tag{display:inline-block;padding:2px 8px;border-radius:4px;font-size:12px;background:#f0f2f5;color:#4e5a6b;margin:0 2px}
+    .tag.space{background:#e8f0ff;color:#3370ff}
+    .tag.lowalt{background:#e8f8f0;color:#00b578}
+    .tag.defense{background:#fff3e0;color:#cc6600}
+    .tag.ai{background:#f0e8ff;color:#7b61ff}
+    .tag.abbr{background:#e8eaed;color:#4e5a6b;font-size:11px}
+    .form-group{margin-bottom:16px}
+    .form-group label{display:block;font-size:13px;font-weight:500;margin-bottom:6px;color:#4e5a6b}
+    .form-group input,.form-group select,.form-group textarea{width:100%;padding:10px 12px;border:1px solid #d0d5dd;border-radius:8px;font-size:14px;outline:none;transition:border .15s;font-family:inherit}
+    .form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:#3370ff;box-shadow:0 0 0 2px rgba(51,112,255,.12)}
+    .form-group textarea{resize:vertical;min-height:80px}
+    .form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+    .tabs{display:flex;gap:0;border-bottom:1px solid #e8eaed;margin-bottom:20px}
+    .tab{padding:10px 20px;cursor:pointer;color:#8c9aa8;font-size:14px;border-bottom:2px solid transparent;transition:all .15s}
+    .tab:hover{color:#4e5a6b}
+    .tab.active{color:#3370ff;border-bottom-color:#3370ff;font-weight:500}
+    .tab-content{display:none}
+    .tab-content.active{display:block}
+    .module-card{border:1px solid #e8eaed;border-radius:10px;margin-bottom:12px;overflow:hidden}
+    .module-header{padding:14px 16px;background:#fafbfc;cursor:pointer;display:flex;align-items:center;justify-content:space-between;font-weight:500}
+    .module-header:hover{background:#f0f2f5}
+    .module-body{padding:16px;display:none;border-top:1px solid #e8eaed}
+    .module-body.open{display:block}
+    .module-body p{line-height:1.7;color:#4e5a6b;margin-bottom:8px}
+    .risk-item{display:flex;gap:12px;padding:12px 0;border-bottom:1px solid #f0f2f5}
+    .risk-item:last-child{border-bottom:none}
+    .risk-icon{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+    .risk-icon.red{background:#fff1f0}
+    .risk-icon.yellow{background:#fff7e6}
+    .risk-content{flex:1}
+    .risk-content .title{font-weight:500;margin-bottom:4px}
+    .risk-content .desc{font-size:13px;color:#6b7a8a;line-height:1.5}
+    .risk-tag{font-size:11px;padding:1px 6px;border-radius:4px;margin-left:8px}
+    .risk-tag.high{background:#fff1f0;color:#f53f3f}
+    .risk-tag.mid{background:#fff7e6;color:#ff8800}
+    .report-actions{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap}
+    .chat-box{border:1px solid #e8eaed;border-radius:10px;overflow:hidden}
+    .chat-msg{padding:12px 16px;border-bottom:1px solid #f0f2f5}
+    .chat-msg:last-child{border-bottom:none}
+    .chat-msg .sender{font-size:12px;color:#8c9aa8;margin-bottom:4px}
+    .chat-msg .sender .name{font-weight:500;color:#1f2a3a}
+    .chat-msg .text{line-height:1.6}
+    .chat-input{display:flex;gap:8px;padding:12px;border-top:1px solid #e8eaed}
+    .chat-input input{flex:1;border:1px solid #d0d5dd;border-radius:6px;padding:8px 12px;outline:none}
+    .chat-input input:focus{border-color:#3370ff}
+    .upload-zone{border:2px dashed #d0d5dd;border-radius:12px;padding:40px;text-align:center;cursor:pointer;transition:all .2s}
+    .upload-zone:hover{border-color:#3370ff;background:#f8faff}
+    .text-muted{color:#8c9aa8}
+    .text-danger{color:#f53f3f}
+    .text-success{color:#00b578}
+    .flex{display:flex}
+    .flex-center{align-items:center}
+    .gap-8{gap:8px}
+    .gap-12{gap:12px}
+    @media(max-width:768px){
+      .sidebar{display:none}
+      .main{margin-left:0}
+      .content{padding:16px}
+      .stats-grid{grid-template-columns:repeat(2,1fr)}
+      .form-row{grid-template-columns:1fr}
+      .topbar{padding:12px 16px}
     }
+    .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.3);z-index:200;display:none;align-items:center;justify-content:center}
+    .modal-overlay.open{display:flex}
+    .modal{background:#fff;border-radius:16px;width:600px;max-width:90vw;max-height:85vh;overflow-y:auto;padding:32px}
+    .modal h2{font-size:18px;margin-bottom:20px}
   </style>
 </head>
 <body>
@@ -138,32 +131,16 @@
       <h1><span class="logo">DD</span> DD-to-IC</h1>
     </div>
     <nav class="sidebar-nav">
-      <div class="nav-item active" data-page="dashboard" onclick="switchPage('dashboard')">
-        <span class="icon">📊</span> 项目看板
-        <span class="badge" id="project-count">0</span>
-      </div>
-      <div class="nav-item" data-page="new-project" onclick="switchPage('new-project')">
-        <span class="icon">➕</span> 新建项目
-      </div>
-      <div class="nav-item" data-page="project-detail" onclick="switchPage('project-detail')" id="nav-detail" style="display:none">
-        <span class="icon">📋</span> 项目详情
-      </div>
+      <div class="nav-item active" data-page="dashboard" onclick="switchPage('dashboard')"><span class="icon">📊</span> 项目看板<span class="badge" id="project-count">0</span></div>
+      <div class="nav-item" data-page="new-project" onclick="switchPage('new-project')"><span class="icon">➕</span> 新建项目</div>
+      <div class="nav-item" data-page="project-detail" onclick="switchPage('project-detail')" id="nav-detail" style="display:none"><span class="icon">📋</span> 项目详情</div>
       <div style="margin:8px 0;border-top:1px solid #e8eaed"></div>
-      <div class="nav-item" onclick="switchPage('red-team')" data-page="red-team">
-        <span class="icon">🔴</span> 红队报告
-      </div>
-      <div class="nav-item" onclick="switchPage('ic-memo')" data-page="ic-memo">
-        <span class="icon">📝</span> 投决材料
-      </div>
-      <div class="nav-item" onclick="switchPage('simulator')" data-page="simulator">
-        <span class="icon">🎯</span> 投决会模拟
-      </div>
+      <div class="nav-item" data-page="red-team" onclick="switchPage('red-team')"><span class="icon">🔴</span> 红队报告</div>
+      <div class="nav-item" data-page="ic-memo" onclick="switchPage('ic-memo')"><span class="icon">📝</span> 投决材料</div>
+      <div class="nav-item" data-page="simulator" onclick="switchPage('simulator')"><span class="icon">🎯</span> 投决会模拟</div>
     </nav>
-    <div class="sidebar-footer">
-      <div class="nav-item" style="font-size:12px;">v1.0 · 数据来自 data/projects.json</div>
-    </div>
+    <div class="sidebar-footer"><div class="nav-item" style="font-size:12px">v1.0 · 数据来自 dd-to-ic Skill</div></div>
   </aside>
-
   <main class="main">
     <header class="topbar">
       <h2 id="page-title">项目看板</h2>
@@ -176,190 +153,180 @@
     <div class="content" id="page-content"></div>
   </main>
 </div>
-
-<div class="loading-overlay" id="loading-overlay">
-  <div>⏳ 数据加载中...</div>
-</div>
+<div class="loading-overlay" id="loading-overlay"><div>⏳ 数据加载中...</div></div>
 
 <script>
-let APP_DATA = { projects: [], stats: {} };
-let currentProject = null;
-let currentPage = 'dashboard';
-const DATA_URL = 'data/projects.json';
+let APP_DATA={projects:[]},currentProject=null,currentPage='dashboard';
+const DATA_URL='data/projects.json';
 
-async function loadData() {
+async function loadData(){
   document.getElementById('loading-overlay').classList.remove('hidden');
-  try {
-    const res = await fetch(DATA_URL + '?t=' + Date.now());
-    if (res.ok) { APP_DATA = await res.json(); }
-  } catch(e) { console.log('数据加载失败', e); }
+  try{
+    const r=await fetch(DATA_URL+'?t='+Date.now());
+    if(r.ok)APP_DATA=await r.json();
+  }catch(e){console.log('load fail',e)}
   document.getElementById('loading-overlay').classList.add('hidden');
   updateUI();
 }
-
-async function refreshData() {
-  const btn = document.getElementById('sync-btn');
-  btn.textContent = '🔄 同步中...';
-  btn.classList.add('loading');
-  await loadData();
-  btn.textContent = '🔄 同步数据';
-  btn.classList.remove('loading');
+async function refreshData(){
+  const b=document.getElementById('sync-btn');b.textContent='🔄 同步中...';b.classList.add('loading');
+  await loadData();b.textContent='🔄 同步数据';b.classList.remove('loading');
 }
+function getProject(id){return APP_DATA.projects.find(p=>p.id==id)}
+function pName(p){return(p.companyFullName||p.name)+'（'+p.name+'）'}
+function pShort(p){return p.companyFullName?p.name:''}
 
-function getProject(id) { return APP_DATA.projects.find(p => p.id == id); }
-
-function switchPage(page, projectId) {
-  if (projectId) currentProject = projectId;
-  currentPage = page;
-  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  const el = document.querySelector('.nav-item[data-page="'+page+'"]');
-  if (el) el.classList.add('active');
-  const titles = {dashboard:'项目看板','new-project':'新建项目','project-detail':'项目详情','red-team':'红队报告','ic-memo':'投决材料','simulator':'投决会模拟'};
-  document.getElementById('page-title').textContent = titles[page] || '项目看板';
-  document.getElementById('nav-detail').style.display = (page==='project-detail'||page==='red-team'||page==='ic-memo')?'block':'none';
+function switchPage(page,pid){
+  if(pid)currentProject=pid;currentPage=page;
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  const el=document.querySelector('.nav-item[data-page="'+page+'"]');if(el)el.classList.add('active');
+  const t={dashboard:'项目看板','new-project':'新建项目','project-detail':'项目详情','red-team':'红队报告','ic-memo':'投决材料','simulator':'投决会模拟'};
+  document.getElementById('page-title').textContent=t[page]||'项目看板';
+  document.getElementById('nav-detail').style.display=(page==='project-detail'||page==='red-team'||page==='ic-memo')?'block':'none';
   updateUI();
 }
+function openProject(id){currentProject=id;switchPage('project-detail')}
+function updateUI(){
+  const c=document.getElementById('page-content');c.innerHTML=R();
+  if(currentPage==='project-detail'&&getProject(currentProject))renderTabs(getProject(currentProject));
+  document.getElementById('project-count').textContent=APP_DATA.projects.length;
+}
+function R(){switch(currentPage){
+  case'dashboard':return Pd();
+  case'new-project':return Pn();
+  case'project-detail':return Pdt(getProject(currentProject));
+  case'red-team':return Pr();
+  case'ic-memo':return Pi();
+  case'simulator':return Ps();
+  default:return Pd();
+}}
 
-function openProject(id) { currentProject = id; switchPage('project-detail'); }
-
-function updateUI() {
-  const container = document.getElementById('page-content');
-  container.innerHTML = renderCurrentPage();
-  if (currentPage === 'project-detail' && getProject(currentProject)) {
-    renderProjectDetailTabs(getProject(currentProject));
-  }
-  document.getElementById('project-count').textContent = APP_DATA.projects.length;
+// Dashboard
+function Pd(){
+  const p=APP_DATA.projects;
+  const active=p.filter(x=>x.status==='draft'||x.status==='analyzing').length;
+  const done=p.filter(x=>x.status==='done').length;
+  const pending=p.filter(x=>x.status==='pending').length;
+  return '<div class="stats-grid">'+
+    '<div class="stat-card"><div class="label">进行中项目</div><div class="value">'+active+'</div><div class="sub">总计 '+p.length+' 个项目</div></div>'+
+    '<div class="stat-card"><div class="label">已完成分析</div><div class="value">'+done+'</div><div class="sub">待上会</div></div>'+
+    '<div class="stat-card"><div class="label">待补充材料</div><div class="value">'+pending+'</div><div class="sub"><span class="text-danger">需跟进</span></div></div>'+
+    '<div class="stat-card"><div class="label">最近更新</div><div class="value" style="font-size:18px">'+(p.length?p[0].name:'—')+'</div></div></div>'+
+    '<div class="card"><div class="card-header"><h3>项目列表</h3>'+
+    (APP_DATA.projects.length?'':
+    '<button class="btn btn-sm btn-primary" onclick="switchPage(\'new-project\')">+ 新建</button>')+
+    '</div>'+
+    (p.length===0?'<div class="text-muted" style="text-align:center;padding:40px 0">暂无项目，点击右上角"新建项目"开始</div>':
+    '<table class="table"><thead><tr><th>公司全称</th><th>简称</th><th>赛道</th><th>轮次</th><th>状态</th><th>进度</th><th>操作</th></tr></thead><tbody>'+
+    p.map(x=>'<tr onclick="openProject(\''+x.id+'\')" style="cursor:pointer">'+
+      '<td><strong>'+(x.companyFullName||x.name)+'</strong><br><span class="text-muted" style="font-size:12px">'+(x.description||'')+'</span></td>'+
+      '<td><span class="tag abbr">'+x.name+'</span></td>'+
+      '<td><span class="tag '+x.sector+'">'+x.sectorLabel+'</span></td>'+
+      '<td>'+x.round+'</td>'+
+      '<td><span class="status '+x.status+'">'+x.statusLabel+'</span></td>'+
+      '<td>'+x.modulesDone+'/'+x.modulesTotal+'</td>'+
+      '<td><button class="btn btn-sm btn-primary" onclick="event.stopPropagation();openProject(\''+x.id+'\')">查看</button></td></tr>').join('')+
+    '</tbody></table>')+'</div>';
 }
 
-function renderCurrentPage() {
-  switch(currentPage) {
-    case 'dashboard': return renderDashboard();
-    case 'new-project': return renderNewProject();
-    case 'project-detail': return renderProjectDetail(getProject(currentProject));
-    case 'red-team': return renderRedTeam();
-    case 'ic-memo': return renderICMemo();
-    case 'simulator': return renderSimulator();
-    default: return renderDashboard();
-  }
-}
-
-function renderDashboard() {
-  const p = APP_DATA.projects;
-  const active = p.filter(x => x.status==='draft'||x.status==='analyzing').length;
-  const done = p.filter(x => x.status==='done').length;
-  const pending = p.filter(x => x.status==='pending').length;
-  return '<div class="stats-grid">' +
-    '<div class="stat-card"><div class="label">进行中项目</div><div class="value">'+active+'</div><div class="sub">总计 '+p.length+' 个项目</div></div>' +
-    '<div class="stat-card"><div class="label">已完成分析</div><div class="value">'+done+'</div><div class="sub">待上会</div></div>' +
-    '<div class="stat-card"><div class="label">待补充材料</div><div class="value">'+pending+'</div><div class="sub"><span class="text-danger">需跟进</span></div></div>' +
-    '<div class="stat-card"><div class="label">最近更新</div><div class="value" style="font-size:18px;">'+(p.length?p[0].name:'—')+'</div></div>' +
-    '</div>' +
-    '<div class="card"><div class="card-header"><h3>项目列表</h3></div>' +
-    (p.length===0?'<div class="text-muted" style="text-align:center;padding:40px 0;">暂无项目</div>':
-    '<table class="table"><thead><tr><th>项目名称</th><th>赛道</th><th>轮次</th><th>状态</th><th>进度</th><th>操作</th></tr></thead><tbody>' +
-    p.map(x => '<tr onclick="openProject(\''+x.id+'\')" style="cursor:pointer"><td><strong>'+x.name+'</strong><br><span class="text-muted" style="font-size:12px;">'+(x.description||'')+'</span></td><td><span class="tag '+x.sector+'">'+x.sectorLabel+'</span></td><td>'+x.round+'</td><td><span class="status '+x.status+'">'+x.statusLabel+'</span></td><td>'+x.modulesDone+'/'+x.modulesTotal+' 模块</td><td><button class="btn btn-sm btn-primary" onclick="event.stopPropagation();openProject(\''+x.id+'\')">查看</button></td></tr>').join('') +
-    '</tbody></table>') + '</div>';
-}
-
-function renderNewProject() {
-  return '<div class="card"><div class="card-header"><h3>新建项目</h3></div>' +
-    '<div class="form-row"><div class="form-group"><label>项目名称 *</label><input type="text" placeholder="如：星辰空间" id="new-name"></div>' +
-    '<div class="form-group"><label>赛道 *</label><select id="new-sector"><option value="">请选择</option><option value="space">🚀 商业航天</option><option value="lowalt">🛩️ 低空经济</option><option value="defense">🎯 国防军工</option><option value="ai">🧠 人工智能</option><option value="embodied">🤖 具身智能</option></select></div></div>' +
-    '<div class="form-row"><div class="form-group"><label>融资轮次 *</label><select id="new-round"><option>天使轮</option><option>Pre-A</option><option>A轮</option><option>A+轮</option><option>B轮</option><option>C轮</option></select></div>' +
-    '<div class="form-group"><label>拟投资金额（万元）</label><input type="text" id="new-amount" placeholder="如：5000"></div></div>' +
-    '<div class="form-group"><label>项目简介</label><textarea id="new-desc" placeholder="简要描述公司做什么、核心产品"></textarea></div>' +
-    '<div class="form-group"><label>分析模式</label><select id="new-mode"><option value="fast">⚡ 快速扫描</option><option value="deep" selected>🔬 深度尽调</option><option value="track">📡 持续跟踪</option></select></div>' +
+// New Project
+function Pn(){
+  return '<div class="card"><div class="card-header"><h3>新建项目</h3></div>'+
+    '<div class="form-row"><div class="form-group"><label>公司全称 *</label><input type="text" placeholder="如：北京星辰空间科技有限公司" id="new-fullname"></div>'+
+    '<div class="form-group"><label>公司简称（用于显示）*</label><input type="text" placeholder="如：星辰空间" id="new-name"></div></div>'+
+    '<div class="form-row"><div class="form-group"><label>赛道 *</label><select id="new-sector"><option value="">请选择</option><option value="space">🚀 商业航天</option><option value="lowalt">🛩️ 低空经济</option><option value="defense">🎯 国防军工</option><option value="ai">🧠 人工智能</option><option value="embodied">🤖 具身智能</option></select></div>'+
+    '<div class="form-group"><label>轮次</label><select id="new-round"><option>天使轮</option><option>Pre-A</option><option>A轮</option><option>A+轮</option><option>B轮</option><option>C轮</option></select></div></div>'+
+    '<div class="form-row"><div class="form-group"><label>拟投资金额（万元）</label><input type="text" id="new-amount" placeholder="如：5000"></div>'+
+    '<div class="form-group"><label>分析模式</label><select id="new-mode"><option value="fast">⚡ 快速扫描</option><option value="deep" selected>🔬 深度尽调</option><option value="track">📡 持续跟踪</option></select></div></div>'+
+    '<div class="form-group"><label>项目简介</label><textarea id="new-desc" rows="3" placeholder="公司做什么、核心产品、目标市场..."></textarea></div>'+
     '<div style="margin-top:20px;display:flex;gap:12px"><button class="btn btn-primary" onclick="createProject()">🚀 启动分析</button><button class="btn btn-secondary" onclick="switchPage(\'dashboard\')">取消</button></div></div>';
 }
-
-function createProject() {
-  const name = document.getElementById('new-name').value.trim();
-  if (!name) { alert('请输入项目名称'); return; }
-  alert('✅ 项目"'+name+'"已创建！\n\n请告诉我：在群里说"帮我分析'+name+'"\n我分析完后你点"同步数据"刷新即可');
+function createProject(){
+  const name=document.getElementById('new-name').value.trim();
+  const full=document.getElementById('new-fullname').value.trim();
+  if(!full||!name){alert('请填写公司全称和简称');return}
+  alert('✅ 已创建：'+full+'（'+name+'）\n\n请在群里告诉我"帮我分析'+name+'"，\n我分析完后你点"同步数据"刷新即可');
   switchPage('dashboard');
 }
 
-function renderProjectDetail(proj) {
-  if (!proj) return '<div class="card"><div class="text-muted" style="text-align:center;padding:40px;">请先选择一个项目</div></div>';
-  const c = {done:'done',draft:'draft',pending:'pending'};
-  return '<div class="card" style="padding:16px 20px;"><div class="flex flex-center" style="justify-content:space-between"><div><h3 style="font-size:18px;">'+proj.name+'</h3><div class="flex gap-8" style="margin-top:6px"><span class="tag '+proj.sector+'">'+proj.sectorLabel+'</span><span class="tag">'+proj.round+'</span><span class="status '+(c[proj.status]||'pending')+'">'+proj.statusLabel+'</span></div></div><div class="flex gap-8"><button class="btn btn-sm btn-primary" onclick="switchPage(\'red-team\')">🔴 红队报告</button><button class="btn btn-sm btn-warning" onclick="switchPage(\'ic-memo\')">📝 投决材料</button></div></div></div>' +
-    '<div class="tabs"><div class="tab active" data-tab="modules" onclick="switchTab(\'modules\')">8 模块分析</div><div class="tab" data-tab="materials" onclick="switchTab(\'materials\')">材料清单</div><div class="tab" data-tab="timeline" onclick="switchTab(\'timeline\')">动态时间线</div></div>' +
+// Project Detail
+function Pdt(proj){
+  if(!proj)return '<div class="card"><div class="text-muted" style="text-align:center;padding:40px">请先选择一个项目</div></div>';
+  const c={done:'done',draft:'draft',pending:'pending'};
+  return '<div class="card" style="padding:16px 20px"><div class="flex flex-center" style="justify-content:space-between">'+
+    '<div><h3 style="font-size:18px">'+pName(proj)+'</h3>'+
+    '<div class="flex gap-8" style="margin-top:6px"><span class="tag '+proj.sector+'">'+proj.sectorLabel+'</span><span class="tag">'+proj.round+'</span><span class="status '+(c[proj.status]||'pending')+'">'+proj.statusLabel+'</span></div></div>'+
+    '<div class="flex gap-8"><button class="btn btn-sm btn-primary" onclick="switchPage(\'red-team\')">🔴 红队报告</button><button class="btn btn-sm btn-warning" onclick="switchPage(\'ic-memo\')">📝 投决材料</button></div></div></div>'+
+    '<div class="tabs"><div class="tab active" data-tab="modules" onclick="switchTab(\'modules\')">8 模块分析</div><div class="tab" data-tab="materials" onclick="switchTab(\'materials\')">材料清单</div><div class="tab" data-tab="timeline" onclick="switchTab(\'timeline\')">动态时间线</div></div>'+
     '<div id="tab-modules" class="tab-content active"></div><div id="tab-materials" class="tab-content"></div><div id="tab-timeline" class="tab-content"></div>';
 }
-
-function renderProjectDetailTabs(proj) {
-  const mods = proj.modules || [];
-  document.getElementById('tab-modules').innerHTML = mods.length===0
-    ? '<div class="card"><div class="text-muted" style="text-align:center;padding:20px;">分析尚未完成，请在群里告诉我分析此项目</div></div>'
-    : mods.map((m,i) => '<div class="module-card"><div class="module-header" onclick="toggleModule(this)"><span>'+m.icon+' '+m.name+' <span class="text-muted" style="font-weight:400;font-size:12px;">— '+m.verdict+' · 置信度'+m.confidence+'</span></span><span>'+(i===0?'▼':'▶')+'</span></div><div class="module-body'+(i===0?' open':'')+'"><p>'+m.content+'</p></div></div>').join('');
-  const ml = proj.materials || [];
-  document.getElementById('tab-materials').innerHTML = '<div class="card"><div class="card-header"><h3>材料完整性检查</h3></div>'+(ml.length===0?'<div class="text-muted" style="text-align:center;padding:20px;">暂无材料</div>':ml.map(m => '<div class="flex flex-center" style="justify-content:space-between;padding:8px 0;border-bottom:1px solid #f0f2f5"><span>'+m.name+'</span><span>'+m.status+'</span></div>').join(''))+'</div>';
-  const tl = proj.timeline || [];
-  document.getElementById('tab-timeline').innerHTML = '<div class="card"><div class="card-header"><h3>分析时间线</h3></div>'+(tl.length===0?'<div class="text-muted" style="text-align:center;padding:20px;">暂无动态</div>':tl.map(t => '<div class="flex flex-center gap-12" style="padding:8px 0;border-bottom:1px solid #f0f2f5"><span style="color:'+(t.active?'#3370ff':'#00b578')+'">●</span><span>'+t.date+'</span><span class="text-muted">'+t.event+'</span></div>').join(''))+'</div>';
+function renderTabs(proj){
+  const mods=proj.modules||[];
+  document.getElementById('tab-modules').innerHTML=mods.length===0
+    ?'<div class="card"><div class="text-muted" style="text-align:center;padding:20px">分析尚未完成，请在群里告知分析</div></div>'
+    :mods.map((m,i)=>'<div class="module-card"><div class="module-header" onclick="toggleModule(this)"><span>'+m.icon+' '+m.name+' <span class="text-muted" style="font-weight:400;font-size:12px">— '+m.verdict+' · 置信度'+m.confidence+'</span></span><span>'+(i===0?'▼':'▶')+'</span></div><div class="module-body'+(i===0?' open':'')+'"><p>'+m.content+'</p></div></div>').join('');
+  const ml=proj.materials||[];
+  document.getElementById('tab-materials').innerHTML='<div class="card"><div class="card-header"><h3>材料完整性检查</h3></div>'+(ml.length===0?'<div class="text-muted" style="text-align:center;padding:20px">暂无材料</div>':ml.map(m=>'<div class="flex flex-center" style="justify-content:space-between;padding:8px 0;border-bottom:1px solid #f0f2f5"><span>'+m.name+'</span><span class="text-success">'+m.status+'</span></div>').join(''))+'</div>';
+  const tl=proj.timeline||[];
+  document.getElementById('tab-timeline').innerHTML='<div class="card"><div class="card-header"><h3>分析时间线</h3></div>'+(tl.length===0?'<div class="text-muted" style="text-align:center;padding:20px">暂无动态</div>':tl.map(t=>'<div class="flex flex-center gap-12" style="padding:8px 0;border-bottom:1px solid #f0f2f5"><span style="color:'+(t.active?'#3370ff':'#00b578')+'">●</span><span>'+t.date+'</span><span class="text-muted">'+t.event+'</span></div>').join(''))+'</div>';
 }
 
-function renderRedTeam() {
-  const proj = getProject(currentProject);
-  const risks = (proj&&proj.risks)?proj.risks:[];
-  if (!proj||risks.length===0) return '<div class="card"><div class="text-muted" style="text-align:center;padding:40px;">该项目暂无红队报告</div></div>';
-  const icons = {high:'🔴',mid:'🟡',low:'🟢'};
-  return '<div class="card" style="border-left: 4px solid #f53f3f;"><div class="flex flex-center gap-12" style="margin-bottom:12px"><span style="font-size:24px;">🔴</span><div><h3 style="font-size:16px;">红队评估报告 · '+proj.name+'</h3><p class="text-muted" style="font-size:12px;">独立于主分析，AI 主动挑战关键假设</p></div></div>' +
-    risks.map(r => '<div class="risk-item"><div class="risk-icon '+(r.level==='high'?'red':'yellow')+'">'+(icons[r.level]||'🟡')+'</div><div class="risk-content"><div class="title">'+r.title+' <span class="risk-tag '+r.level+'">'+(r.level==='high'?'高':'中')+'</span></div><div class="desc">'+r.desc+'</div></div></div>').join('') +
+// Red Team
+function Pr(){
+  const proj=getProject(currentProject);
+  const risks=(proj&&proj.risks)?proj.risks:[];
+  if(!proj||risks.length===0)return '<div class="card"><div class="text-muted" style="text-align:center;padding:40px">暂无红队报告</div></div>';
+  const icons={high:'🔴',mid:'🟡'};
+  return '<div class="card" style="border-left:4px solid #f53f3f"><div class="flex flex-center gap-12" style="margin-bottom:12px"><span style="font-size:24px">🔴</span><div><h3 style="font-size:16px">红队评估报告 · '+pName(proj)+'</h3><p class="text-muted" style="font-size:12px">独立于主分析，AI 主动挑战关键假设</p></div></div>'+
+    risks.map(r=>'<div class="risk-item"><div class="risk-icon '+(r.level==='high'?'red':'yellow')+'">'+(icons[r.level]||'🟡')+'</div><div class="risk-content"><div class="title">'+r.title+' <span class="risk-tag '+r.level+'">'+(r.level==='high'?'高':'中')+'</span></div><div class="desc">'+r.desc+'</div></div></div>').join('')+
     '<div class="report-actions"><button class="btn btn-warning btn-sm" onclick="alert(\'导出功能开发中\')">📋 导出红队报告</button><button class="btn btn-secondary btn-sm" onclick="switchPage(\'simulator\')">🎯 模拟问答</button></div></div>';
 }
 
-function renderICMemo() {
-  const proj = getProject(currentProject);
-  if (!proj||!proj.modules||proj.modules.length<5) return '<div class="card"><div class="text-muted" style="text-align:center;padding:40px;">请选择一个已完成完整分析的项目</div></div>';
-  return '<div class="card"><div class="flex flex-center" style="justify-content:space-between;margin-bottom:16px"><h3 style="font-size:16px;">📝 投资建议书 · '+proj.name+'</h3><div class="flex gap-8"><button class="btn btn-sm btn-primary" onclick="alert(\'导出功能开发中\')">导出 PDF</button></div></div>' +
-    '<div class="module-card"><div class="module-header" onclick="toggleMemo(this)">📄 执行摘要 <span>▼</span></div><div class="module-body open"><p><strong>项目：</strong>'+proj.name+' — '+proj.description+'</p><p><strong>赛道判断：</strong>'+(proj.modules[0]?.verdict||'待定')+'</p><p><strong>投资建议：</strong><span class="text-success"><strong>待投决会讨论</strong></span></p><p><strong>拟投资金额：</strong>￥'+(proj.amount||'待定')+'万</p></div></div>' +
-    '<div class="module-card"><div class="module-header" onclick="toggleMemo(this)">📊 核心分析 <span>▶</span></div><div class="module-body">'+proj.modules.slice(0,3).map(m => '<p><strong>'+m.icon+' '+m.name+'：</strong>'+m.verdict+'（置信度'+m.confidence+'）</p>').join('')+'</div></div>' +
-    '<div class="module-card"><div class="module-header" onclick="toggleMemo(this)">❓ 投决会 Q&A 预判 <span>▶</span></div><div class="module-body"><p><strong>Q：这个赛道为什么值得下注？</strong></p><p>A：政策端利好 + 市场需求明确 + 技术成熟度提升。</p></div></div></div>';
+// IC Memo
+function Pi(){
+  const proj=getProject(currentProject);
+  if(!proj||!proj.modules||proj.modules.length<5)return '<div class="card"><div class="text-muted" style="text-align:center;padding:40px">请选择一个已完成完整分析的项目</div></div>';
+  return '<div class="card"><div class="flex flex-center" style="justify-content:space-between;margin-bottom:16px"><h3 style="font-size:16px">📝 投资建议书 · '+pName(proj)+'</h3><div class="flex gap-8"><button class="btn btn-sm btn-primary" onclick="alert(\'导出功能开发中\')">导出 PDF</button></div></div>'+
+    '<div class="module-card"><div class="module-header" onclick="toggleMemo(this)">📄 执行摘要 <span>▼</span></div><div class="module-body open"><p><strong>项目：</strong>'+pName(proj)+'</p><p><strong>赛道：</strong>'+proj.sectorLabel+' '+proj.round+'</p><p><strong>投资建议：</strong><span class="text-success"><strong>待投决会讨论</strong></span></p><p><strong>拟投资金额：</strong>￥'+(proj.amount||'待定')+'万</p></div></div>'+
+    '<div class="module-card"><div class="module-header" onclick="toggleMemo(this)">📊 核心分析 <span>▶</span></div><div class="module-body">'+proj.modules.slice(0,3).map(m=>'<p><strong>'+m.icon+' '+m.name+'：</strong>'+m.verdict+'（'+m.confidence+'）</p>').join('')+'</div></div>'+
+    '<div class="module-card"><div class="module-header" onclick="toggleMemo(this)">❓ Q&A 预判 <span>▶</span></div><div class="module-body"><p><strong>Q：这个赛道为什么值得下注？</strong></p><p>A：政策利好 + 市场需求明确 + 技术成熟。</p></div></div></div>';
 }
 
-function renderSimulator() {
-  return '<div class="card"><div class="flex flex-center gap-12" style="margin-bottom:16px"><span style="font-size:24px;">🎯</span><div><h3 style="font-size:16px;">投决会模拟问答</h3><p class="text-muted" style="font-size:12px;">我来扮演投决委，你回答问题，我帮你优化话术</p></div></div>' +
-    '<div class="form-group"><label>选择项目</label><select id="sim-project-select" onchange="updateSimProject(this.value)">'+APP_DATA.projects.map(p => '<option value="'+p.id+'">'+p.name+' — '+p.sectorLabel+' '+p.round+'</option>').join('')+'</select></div>' +
-    '<div class="chat-box" id="sim-chat"><div class="chat-msg"><div class="sender"><span class="name">🤖 投决委（AI）</span></div><div class="text">选择上面的项目开始模拟问答。我会扮演投决委提问，你来回答。</div></div>' +
-    '<div class="chat-input" style="border-top:1px solid #e8eaed;"><input type="text" placeholder="输入你的回答..." id="sim-input"><button class="btn btn-sm btn-primary" onclick="sendSimMsg()">发送</button></div></div></div>';
+// Simulator
+function Ps(){
+  return '<div class="card"><div class="flex flex-center gap-12" style="margin-bottom:16px"><span style="font-size:24px">🎯</span><div><h3 style="font-size:16px">投决会模拟问答</h3><p class="text-muted" style="font-size:12px">我扮演投决委，你来回答，我帮你优化话术</p></div></div>'+
+    '<div class="form-group"><label>选择项目</label><select id="sim-select" onchange="updateSim(this.value)">'+APP_DATA.projects.map(p=>'<option value="'+p.id+'">'+pName(p)+'</option>').join('')+'</select></div>'+
+    '<div class="chat-box" id="sim-chat"><div class="chat-msg"><div class="sender"><span class="name">🤖 投决委（AI）</span></div><div class="text">选择项目开始模拟问答。</div></div>'+
+    '<div class="chat-input"><input type="text" id="sim-input" placeholder="输入回答..."><button class="btn btn-sm btn-primary" onclick="sendSim()">发送</button></div></div></div>';
+}
+function updateSim(id){
+  const p=getProject(id);if(!p)return;
+  const c=document.getElementById('sim-chat');
+  c.innerHTML='<div class="chat-msg"><div class="sender"><span class="name">🤖 投决委（AI）</span></div><div class="text">已切换至 <strong>'+pName(p)+'</strong>。<br><br>第一个问题：这个项目的核心投资逻辑是什么？为什么这个时点值得下手？</div></div>'+
+    '<div class="chat-input"><input type="text" id="sim-input" placeholder="输入回答..."><button class="btn btn-sm btn-primary" onclick="sendSim()">发送</button></div>';
+}
+function sendSim(){
+  const inp=document.getElementById('sim-input');if(!inp||!inp.value.trim())return;
+  const t=inp.value.trim();inp.value='';
+  const c=document.getElementById('sim-chat');
+  const u=document.createElement('div');u.className='chat-msg';
+  u.innerHTML='<div class="sender"><span class="name">🧑‍💼 你</span></div><div class="text">'+t+'</div>';
+  c.insertBefore(u,c.lastElementChild);
+  setTimeout(()=>{
+    const a=document.createElement('div');a.className='chat-msg';
+    a.innerHTML='<div class="sender"><span class="name">🤖 投决委（AI）</span></div><div class="text">回答有内容，建议用具体数据增强说服力。<br><br><strong>追问：</strong>竞争对手也在融资，你怎么看竞争格局？</div>';
+    c.insertBefore(a,c.lastElementChild);
+  },800);
 }
 
-function updateSimProject(id) {
-  const proj = getProject(id); if (!proj) return;
-  const chat = document.getElementById('sim-chat');
-  chat.innerHTML = '<div class="chat-msg"><div class="sender"><span class="name">🤖 投决委（AI）</span></div><div class="text">已切换至 <strong>'+proj.name+'</strong>。第一个问题：为什么这个项目值得在这个时点下注？</div></div>' +
-    '<div class="chat-input" style="border-top:1px solid #e8eaed;"><input type="text" id="sim-input" placeholder="输入你的回答..."><button class="btn btn-sm btn-primary" onclick="sendSimMsg()">发送</button></div>';
-}
-
-function sendSimMsg() {
-  const input = document.getElementById('sim-input');
-  if (!input||!input.value.trim()) return;
-  const text = input.value.trim(); input.value = '';
-  const chat = document.getElementById('sim-chat');
-  const u = document.createElement('div'); u.className = 'chat-msg';
-  u.innerHTML = '<div class="sender"><span class="name">🧑‍💼 你</span></div><div class="text">'+text+'</div>';
-  chat.insertBefore(u, chat.lastElementChild);
-  setTimeout(() => {
-    const a = document.createElement('div'); a.className = 'chat-msg';
-    a.innerHTML = '<div class="sender"><span class="name">🤖 投决委（AI）</span></div><div class="text">回答有内容。建议用具体数字增强说服力。<br><strong>追问：</strong>竞争对手也在融资，你怎么看竞争格局？</div>';
-    chat.insertBefore(a, chat.lastElementChild);
-  }, 800);
-}
-
-function switchTab(t) {
+function switchTab(t){
   document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
   document.querySelectorAll('.tab-content').forEach(x=>x.classList.remove('active'));
   document.querySelector('.tab[data-tab="'+t+'"]').classList.add('active');
   document.getElementById('tab-'+t).classList.add('active');
 }
-function toggleModule(el) {
-  const b = el.nextElementSibling; b.classList.toggle('open');
-  el.querySelector('span:last-child').textContent = b.classList.contains('open')?'▼':'▶';
-}
-function toggleMemo(el) {
-  const b = el.nextElementSibling; b.classList.toggle('open');
-  el.querySelector('span:last-child').textContent = b.classList.contains('open')?'▼':'▶';
-}
+function toggleModule(el){const b=el.nextElementSibling;b.classList.toggle('open');el.querySelector('span:last-child').textContent=b.classList.contains('open')?'▼':'▶'}
+function toggleMemo(el){const b=el.nextElementSibling;b.classList.toggle('open');el.querySelector('span:last-child').textContent=b.classList.contains('open')?'▼':'▶'}
 
 loadData();
 </script>
