@@ -356,7 +356,14 @@ function renderTabs(proj){
       {name:'\u843d\u5730\u6c47\u62a5\u65b9\u6848\u2014\u5149\u5b66',checked:true}
     ]}
   ];
-  document.getElementById('tab-materials').innerHTML='<div class="card"><div class="card-header"><h3>材料完整性检查</h3></div>'+(ml.length===0?'<div class="text-muted" style="text-align:center;padding:20px">暂无材料</div>':ml.map(m=>'<div class="flex flex-center" style="justify-content:space-between;padding:8px 0;border-bottom:1px solid #f0f2f5"><span>'+m.name+'</span><span class="text-success">'+m.status+'</span></div>').join(''))+'</div>';
+  document.getElementById('tab-materials').innerHTML='<div class="card"><div class="card-header"><h3>材料完整性检查</h3></div>'+(ml.length===0?'<div class="text-muted" style="text-align:center;padding:20px">暂无材料</div>':ml.map(m=>'<div class="flex flex-center" style="justify-content:space-between;padding:8px 0;border-bottom:1px solid #f0f2f5"><span>'+m.name+'</span><span class="text-success">'+m.status+'</span></div>').join('')+'</div>'+
+  '<div class="card" style="margin-top:16px"><div class="card-header"><h3>\u5c3d\u8c03\u6e05\u5355 \u2714\ufe0f \u8d44\u6599\u5b8c\u6574\u6027\u68c0\u67e5</h3><span style="font-size:12px;color:#8c9aa8">\u5df2\u5b8c\u6210'+ddChecklist.reduce(function(s,c){return s+c.items.filter(function(i){return i.checked}).length;},0)+'/'+ddChecklist.reduce(function(s,c){return s+c.items.length;},0)+'\u9879</span></div>'+
+  ddChecklist.map(function(c){return '<div style="margin-bottom:12px"><div style="font-weight:600;font-size:14px;color:#1f2a3a;padding:6px 0;border-bottom:1px solid #f0f2f5">'+c.cat+'</div>'+
+    c.items.map(function(i){return '<label style="display:flex;align-items:center;gap:8px;padding:5px 8px;border-radius:4px;cursor:pointer;font-size:13px;'+(i.checked?'background:#f0f8f0':'')+'">'+
+      '<input type="checkbox" '+(i.checked?'checked':'')+' style="width:16px;height:16px;accent-color:#3370ff" disabled>'+
+      '<span style="'+(i.checked?'color:#1f2a3a':'color:#8c9aa8')+'">'+i.name+'</span></label>';}).join('')+
+    '</div>';}).join('')+
+  '</div>';
   const tl=proj.timeline||[];
   document.getElementById('tab-timeline').innerHTML='<div class="card"><div class="card-header"><h3>分析时间线</h3></div>'+(tl.length===0?'<div class="text-muted" style="text-align:center;padding:20px">暂无动态</div>':tl.map(t=>'<div class="flex flex-center gap-12" style="padding:8px 0;border-bottom:1px solid #f0f2f5"><span style="color:'+(t.active?'#3370ff':'#00b578')+'">●</span><span>'+t.date+'</span><span class="text-muted">'+t.event+'</span></div>').join(''))+'</div>';
 }
